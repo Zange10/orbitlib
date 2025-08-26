@@ -17,6 +17,8 @@ add_library(orbitlib STATIC src/orbitlib.c
         include/orbitlib_ephemeris.h
         src/datetime.c
         include/orbitlib_datetime.h
+        src/fileio.c
+        include/orbitlib_fileio.h
 )
 
 target_link_libraries(orbitlib PRIVATE geometrylib)

@@ -1,38 +1,8 @@
 #include "orbitlib_ephemeris.h"
+#include "orbitlib_fileio.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <errno.h>
-
-#ifdef _WIN32
-#include <windows.h>
-#include <urlmon.h>
-#pragma comment(lib, "urlmon.lib")  // Link against urlmon.dll
-#include <direct.h>    // _mkdir
-#define MKDIR(path) _mkdir(path)
-#else
-#include <sys/stat.h>  // mkdir
-#include <sys/types.h>
-#define MKDIR(path) mkdir(path, 0755)
-#include <unistd.h>
-#endif
-
-
-char *ephem_directory = "../Ephemerides";
-
-
-int directory_exists(const char *path) {
-	if (!path || strlen(path) == 0)
-		return 0;
-
-	#ifdef _WIN32
-		DWORD attrs = GetFileAttributesA(path);
-		return (attrs != INVALID_FILE_ATTRIBUTES) && (attrs & FILE_ATTRIBUTE_DIRECTORY);
-	#else
-		struct stat st;
-		return (stat(path, &st) == 0) && S_ISDIR(st.st_mode);
-	#endif
-}
 
 
 void print_ephem(struct Ephem ephem) {
@@ -43,15 +13,13 @@ void print_ephem(struct Ephem ephem) {
 		   ephem.r.x, ephem.r.y, ephem.r.z, ephem.v.x, ephem.v.y, ephem.v.z);
 }
 
-
-
-void get_ephem_data_filepath(int id, char *filepath) {
+void get_ephem_data_filepath(int id, char *filepath, const char *ephem_directory) {
 	sprintf(filepath, "%s/%d.ephem", ephem_directory, id);
 }
 
-int is_ephem_available(int body_code) {
+int is_ephem_available(int body_code, const char *ephem_directory) {
 	char filepath[50];
-	get_ephem_data_filepath(body_code, filepath);
+	get_ephem_data_filepath(body_code, filepath, ephem_directory);
 	FILE *file = fopen(filepath, "r");  // Try to open file in read mode
 	if (file) {
 		fclose(file);  // Close file if it was opened
@@ -60,30 +28,14 @@ int is_ephem_available(int body_code) {
 	return 0;          // File does not exist
 }
 
-void download_file(const char *url, const char *filepath) {
-#ifdef _WIN32
-	HRESULT hr = URLDownloadToFile(NULL, url, filepath, 0, NULL);
-    if (hr != S_OK) {
-        fprintf(stderr, "Error downloading file: %lx\n", hr);
-    }
-#else
-	char wget_command[512];
-	snprintf(wget_command, sizeof(wget_command), "wget \"%s\" -O %s", url, filepath);
-	int ret_code = system(wget_command);
-	if (ret_code != 0) {
-		fprintf(stderr, "Error executing wget: %d\n", ret_code);
-	}
-#endif
-}
-
-void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step) {
+void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step, const char *ephem_directory) {
 	if(body->orbit.cb == NULL) return;
-	if(!directory_exists(ephem_directory)) MKDIR(ephem_directory);
+	if(!directory_exists(ephem_directory)) create_directory(ephem_directory);
 	
 	char filepath[50];
-	get_ephem_data_filepath(body->id, filepath);
+	get_ephem_data_filepath(body->id, filepath, ephem_directory);
 	
-	if(!is_ephem_available(body->id)) {
+	if(!is_ephem_available(body->id, ephem_directory)) {
 		char d0_s[32];
 		char d1_s[32];
 		date_to_string(min_date, d0_s, 1);

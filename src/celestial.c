@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "orbitlib_fileio.h"
 
 
 struct Body * new_body() {
@@ -104,6 +105,24 @@ void print_celestial_system_layer(CelestSystem *system, int layer) {
 		printf("%s\n", system->bodies[i]->name);
 		if(system->bodies[i]->system != NULL) print_celestial_system_layer(system->bodies[i]->system, layer+1);
 	}
+}
+
+int init_available_systems_from_path(const char *directory, CelestSystem ***p_systems) {
+	if(!directory_exists(directory)) {
+		create_directory(directory);
+		return 0;
+	}
+	
+	*p_systems = (CelestSystem **) malloc(4 * sizeof(struct System*));	// A maximum of 10 systems seems reasonable
+	
+	int num_systems = 0;
+	char **paths = list_files_with_extension(directory, ".cfg", &num_systems);
+	
+	for(int i = 0; i < num_systems; i++) {
+		printf("%s\n", paths[i]);
+	}
+	
+	free(paths);
 }
 
 void print_celestial_system(CelestSystem *system) {

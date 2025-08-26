@@ -28,6 +28,6 @@ void print_ephem(struct Ephem ephem);
  * @param body The body for which the ephemerides should be stored
  * @param central_body The central body of the body's system
  */
-void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step);
+void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step, const char *ephem_directory);
 
 #endif //ORBITLIB_ORBITLIB_EPHEMERIS_H
