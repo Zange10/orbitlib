@@ -12,7 +12,10 @@ add_library(orbitlib STATIC src/orbitlib.c
         src/celestial.c
         include/orbitlib_celestial.h
         src/orbit.c
-        include/orbitlib_orbit.h)
+        include/orbitlib_orbit.h
+        src/ephemeris.c
+        include/orbitlib_ephemeris.h
+)
 
 target_link_libraries(orbitlib PRIVATE geometrylib)
 

@@ -1,22 +1,34 @@
 #ifndef ORBITLIB_ORBITLIB_ORBIT_H
 #define ORBITLIB_ORBITLIB_ORBIT_H
 
+#include "geometrylib.h"
+
+typedef struct Body Body;
+
 typedef struct Orbit {
 	struct Body * cb;	// central body
 	double e;           // eccentricity
 	double a;           // semi-major axis
-	double incl; 		// inclination
+	double i; 			// inclination
 	double raan;        // right ascension of the ascending node
 	double arg_peri; 	// argument of periapsis
 	double ta;   		// true anomaly
-	double t;			// time since periapsis
-	double period;      // orbital period
-	double apoapsis;    // highest point in orbit
-	double periapsis;   // lowest point in orbit
 } Orbit;
 
 typedef struct OSV {
-	// tbd
+	Vector3 r, v;
 } OSV;
+
+// constructs orbit using orbital elements
+struct Orbit constr_orbit_from_elements(double semimajor_axis, double eccentricity, double inclination, double raan, double arg_of_peri, double true_anomaly, struct Body *cb);
+
+// constructs orbit using apsides and inclination
+struct Orbit constr_orbit_from_apsides(double apsis1, double apsis2, double inclination, Body *cb);
+
+// constructs orbit from Orbital State Vector
+struct Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, Body *cb);
+
+OSV osv_from_orbit(Orbit orbit);
+
 
 #endif //ORBITLIB_ORBITLIB_ORBIT_H
