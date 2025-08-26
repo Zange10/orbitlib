@@ -1,0 +1,3 @@
+[submodule "external/geometrylib"]
+	path = external/geometrylib
+	url = https://github.com/Zange10/geometrylib
