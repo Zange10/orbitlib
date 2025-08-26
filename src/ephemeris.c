@@ -84,6 +84,15 @@ void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime 
 		date_to_string(max_date, d1_s, 1);
 		// Construct the URL with your API key and parameters
 		
+		char timestep_s[8];
+		if(time_step.y > 0) {
+			sprintf(timestep_s, "%d y", time_step.y);
+		} else if(time_step.m > 0) {
+			sprintf(timestep_s, "%d mo", time_step.m);
+		} else if(time_step.d > 0) {
+			sprintf(timestep_s, "%d d", time_step.d);
+		} else return;
+		
 		char url[256];
 		sprintf(url, "https://ssd.jpl.nasa.gov/api/horizons.api?"
 					 "format=text&"
@@ -94,8 +103,8 @@ void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime 
 					 "CENTER='500@%d'&"
 					 "START_TIME='%s'&"
 					 "STOP_TIME='%s'&"
-					 "STEP_SIZE='1 mo'&"
-					 "VEC_TABLE='2'", body->id, body->orbit.cb->id, d0_s, d1_s);
+					 "STEP_SIZE='%s'&"
+					 "VEC_TABLE='2'", body->id, body->orbit.cb->id, d0_s, d1_s, timestep_s);
 		
 		download_file(url, filepath);
 	}
