@@ -1,13 +1,14 @@
 #include "orbitlib_orbit.h"
 #include "orbitlib_celestial.h"
 #include <math.h>
+#include <stdio.h>
 
 struct Orbit constr_orbit_from_elements(double semimajor_axis, double eccentricity, double inclination, double raan, double arg_of_peri, double true_anomaly, struct Body *cb) {
 	struct Orbit new_orbit;
 	new_orbit.cb = cb;
 	new_orbit.a = semimajor_axis;
 	// avoid nan when converting to osv and back
-	new_orbit.e = eccentricity != eccentricity ? eccentricity : eccentricity+1e-12;
+	new_orbit.e = eccentricity != 0 ? eccentricity : eccentricity+1e-12;
 	// avoid nan when converting to osv and back
 	new_orbit.i = inclination != 0 ? inclination : inclination + 1e-12;
 	new_orbit.raan = raan;
@@ -229,4 +230,36 @@ OSV propagate_osv_ta(OSV osv, Body *cb, double delta_ta) {
 	Orbit orbit = constr_orbit_from_osv(osv.r, osv.v, cb);
 	orbit.ta = pi_norm(orbit.ta+delta_ta);
 	return osv_from_orbit(orbit);
+}
+
+double calc_orbital_speed(struct Orbit orbit, double r) {
+	double v2 = orbit.cb->mu * (2/r - 1/orbit.a);
+	return sqrt(v2);
+}
+
+double calc_orbit_apoapsis(struct Orbit orbit) {
+	return orbit.a*(1+orbit.e) - orbit.cb->radius;
+}
+
+double calc_orbit_periapsis(struct Orbit orbit) {
+	return orbit.a*(1-orbit.e) - orbit.cb->radius;
+}
+
+
+
+// Printing info #######################################################
+
+void print_orbit_info(struct Orbit orbit) {
+	struct Body *body = orbit.cb;
+	printf("\n______________________\nORBIT:\n\n");
+	printf("Orbiting: \t\t%s\n", body->name);
+	printf("Apoapsis:\t\t%g km\n", (calc_orbit_apoapsis(orbit)-body->radius)/1000);
+	printf("Periapsis:\t\t%g km\n", (calc_orbit_periapsis(orbit)-body->radius)/1000);
+	printf("Semi-major axis:\t%g km\n", orbit.a /1000);
+	printf("Inclination:\t\t%g°\n", rad2deg(orbit.i));
+	printf("Eccentricity:\t\t%g\n", orbit.e);
+	printf("RAAN:\t\t\t\t%g°\n", rad2deg(orbit.raan));
+	printf("Arg of Periapsis:\t%g°\n", rad2deg(orbit.arg_peri));
+	printf("Orbital Period:\t\t%gs\n", calc_orbital_period(orbit));
+	printf("______________________\n\n");
 }

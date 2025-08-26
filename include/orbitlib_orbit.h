@@ -38,4 +38,12 @@ OSV propagate_osv_time(OSV osv, Body *cb, double dt);
 
 OSV propagate_osv_ta(OSV osv, Body *cb, double delta_ta);
 
+double calc_orbital_speed(struct Orbit orbit, double r);
+
+double calc_orbit_apoapsis(struct Orbit orbit);
+
+double calc_orbit_periapsis(struct Orbit orbit);
+
+void print_orbit_info(struct Orbit orbit)
+
 #endif //ORBITLIB_ORBITLIB_ORBIT_H
