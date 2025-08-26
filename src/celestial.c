@@ -107,23 +107,25 @@ void print_celestial_system_layer(CelestSystem *system, int layer) {
 	}
 }
 
-int init_available_systems_from_path(const char *directory, CelestSystem ***p_systems) {
+CelestSystem ** init_available_systems_from_path(const char *directory, int *num_systems) {
 	if(!directory_exists(directory)) {
 		create_directory(directory);
 		return 0;
 	}
 	
-	*p_systems = (CelestSystem **) malloc(4 * sizeof(struct System*));	// A maximum of 10 systems seems reasonable
+	CelestSystem **p_systems = (CelestSystem **) malloc(4 * sizeof(struct System*));	// A maximum of 10 systems seems reasonable
 	
-	int num_systems = 0;
-	char **paths = list_files_with_extension(directory, ".cfg", &num_systems);
+	*num_systems = 0;
+	char **paths = list_files_with_extension(directory, ".cfg", num_systems);
 	
-	for(int i = 0; i < num_systems; i++) {
-		printf("%s\n", paths[i]);
+	char path[50];
+	for(int i = 0; i < *num_systems; i++) {
+		sprintf(path, "%s/%s", directory, paths[i]);
+		p_systems[i] = load_celestial_system_from_cfg_file(path);
 	}
 	
 	free(paths);
-	return num_systems;
+	return p_systems;
 }
 
 void print_celestial_system(CelestSystem *system) {

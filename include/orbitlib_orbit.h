@@ -28,6 +28,8 @@ struct Orbit constr_orbit_from_apsides(double apsis1, double apsis2, double incl
 // constructs orbit from Orbital State Vector
 struct Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, Body *cb);
 
+double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anomaly);
+
 OSV osv_from_orbit(Orbit orbit);
 
 

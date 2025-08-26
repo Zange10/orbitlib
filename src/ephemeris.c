@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 void print_ephem(struct Ephem ephem) {
@@ -124,4 +125,27 @@ void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime 
 		line[strcspn(line, "\n")] = '\0';
 	}
 	fclose(file);
+}
+
+Ephem get_closest_ephem(Ephem *ephem, int num_ephems, double epoch) {
+	for(int i = 0; i < num_ephems; i++) {
+		if(epoch < ephem[i].epoch) {
+			if(i == 0) return ephem[0];
+			if(fabs(ephem[i-1].epoch - epoch) < fabs(ephem[i].epoch-epoch)) return ephem[i-1];
+			else return ephem[i];
+		}
+	}
+	return ephem[num_ephems-1];
+}
+
+OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, struct Body *cb) {
+	Ephem ephem = get_closest_ephem(ephem_list, num_ephems, epoch);
+	
+//	Vector3 r1 = ephem.r;
+//	Vector3 v1 = ephem.v;
+//	double dt1 = (epoch - ephem.epoch) * (24 * 60 * 60);
+//	struct OSV osv = propagate_orbit_time(constr_orbit_from_osv(r1,v1,cb), dt1, cb);
+//	return osv;
+
+	return (OSV) {ephem.r, ephem.v};
 }

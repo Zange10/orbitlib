@@ -75,6 +75,19 @@ struct Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, struct Body *cb) {
 	return new_orbit;
 }
 
+double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anomaly) {
+	// Solve Kepler's equation
+	double ecc_anomaly = mean_anomaly; // Initial guess
+	double delta;
+	do {
+		delta = (ecc_anomaly - orbit.e * sin(ecc_anomaly) - mean_anomaly) / (1 - orbit.e * cos(ecc_anomaly));
+		ecc_anomaly -= delta;
+	} while (fabs(delta) > 1e-6);
+	
+	// True anomaly from eccentric anomaly and eccentricity
+	return 2 * atan(sqrt((1 + orbit.e) / (1 - orbit.e)) * tan(ecc_anomaly / 2));
+}
+
 Vector2 calc_orbital_speed_2d(double r_mag, double v_mag, double theta, double gamma) {
 	Vector2 r_norm = {cos(theta), sin(theta)};
 	Vector2 r = scale_vec2(r_norm, r_mag);
