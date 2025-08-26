@@ -4,5 +4,6 @@
 #include "orbitlib_orbit.h"
 #include "orbitlib_celestial.h"
 #include "orbitlib_ephemeris.h"
+#include "orbitlib_datetime.h"
 
 #endif // ORBITLIB_ORBITLIB_H
