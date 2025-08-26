@@ -46,8 +46,6 @@ CelestSystem * get_top_level_system(CelestSystem *system);
 
 struct Body * get_body_by_name(char *name, CelestSystem *system);
 
-void free_system(CelestSystem *system);
-
 int get_body_system_id(struct Body *body, CelestSystem *system);
 
 void print_celestial_system_layer(CelestSystem *system, int layer);
@@ -55,5 +53,9 @@ void print_celestial_system_layer(CelestSystem *system, int layer);
 void print_celestial_system(CelestSystem *system);
 
 CelestSystem ** init_available_systems_from_path(const char *directory, int *num_systems);
+
+void free_celestial_system(CelestSystem *system);
+
+void free_celestial_systems(CelestSystem **systems, int num_systems);
 
 #endif //ORBITLIB_ORBITLIB_CELESTIAL_H

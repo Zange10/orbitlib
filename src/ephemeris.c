@@ -140,12 +140,6 @@ Ephem get_closest_ephem(Ephem *ephem, int num_ephems, double epoch) {
 
 OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, struct Body *cb) {
 	Ephem ephem = get_closest_ephem(ephem_list, num_ephems, epoch);
-	
-//	Vector3 r1 = ephem.r;
-//	Vector3 v1 = ephem.v;
-//	double dt1 = (epoch - ephem.epoch) * (24 * 60 * 60);
-//	struct OSV osv = propagate_orbit_time(constr_orbit_from_osv(r1,v1,cb), dt1, cb);
-//	return osv;
-
-	return (OSV) {ephem.r, ephem.v};
+	double dt = (epoch - ephem.epoch) * (24 * 60 * 60);
+	return propagate_osv_time((OSV){ephem.r, ephem.v}, cb, dt);
 }

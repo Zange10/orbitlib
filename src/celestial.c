@@ -80,16 +80,6 @@ struct Body * get_body_by_name(char *name, CelestSystem *system) {
 	return NULL;
 }
 
-void free_system(CelestSystem *system) {
-	if(system == NULL) return;
-	for(int i = 0; i < system->num_bodies; i++) {
-		if(system->bodies[i]->ephem != NULL) free(system->bodies[i]->ephem);
-		free(system->bodies[i]);
-	}
-	free(system->cb);
-	free(system);
-}
-
 int get_body_system_id(struct Body *body, CelestSystem *system) {
 	for(int i = 0; i < system->num_bodies; i++) {
 		if(system->bodies[i] == body) return i;
@@ -128,7 +118,24 @@ CelestSystem ** init_available_systems_from_path(const char *directory, int *num
 	return p_systems;
 }
 
+void free_celestial_system(CelestSystem *system) {
+	if(system == NULL) return;
+	for(int i = 0; i < system->num_bodies; i++) {
+		if(system->bodies[i]->ephem != NULL) free(system->bodies[i]->ephem);
+		free(system->bodies[i]);
+	}
+	free(system->cb);
+	free(system);
+}
+
+void free_celestial_systems(CelestSystem **systems, int num_systems) {
+	for(int i = 0; i < num_systems; i++) {
+		free_celestial_system(systems[i]);
+	}
+	free(systems);
+}
+
 void print_celestial_system(CelestSystem *system) {
-	printf("%s\n", system->cb->name);
+	printf("%s:\n%s\n", system->name, system->cb->name);
 	print_celestial_system_layer(system, 1);
 }

@@ -17,7 +17,6 @@ struct Orbit constr_orbit_from_elements(double semimajor_axis, double eccentrici
 	return new_orbit;
 }
 
-
 struct Orbit constr_orbit_from_apsides(double apsis1, double apsis2, double inclination, struct Body *cb) {
 	struct Orbit new_orbit;
 	new_orbit.cb = cb;
@@ -128,4 +127,106 @@ OSV osv_from_orbit(Orbit orbit) {
 	
 	OSV osv = {r, v};
 	return osv;
+}
+
+double calc_orbit_time_since_periapsis(Orbit orbit) {
+	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
+	double t;
+	if(orbit.e < 1) {
+		double E = 2*atan(sqrt((1 - orbit.e)/(1 + orbit.e))*tan(orbit.ta/2));
+		t = (E - orbit.e*sin(E))/n;
+		if(t < 0) {
+			double T = 2*M_PI/n;
+			t += T;
+		}
+	} else {
+		double F = acosh((orbit.e + cos(orbit.ta)) / (1 + orbit.e * cos(orbit.ta)));
+		t = (orbit.e * sinh(F) - F) / n;
+		if(orbit.ta > M_PI) t *= -1;
+	}
+	return t;
+}
+
+double calc_orbital_period(Orbit orbit) {
+	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
+	if(orbit.e < 1) return 2*M_PI/n;
+	else return INFINITY;
+}
+
+
+Orbit propagate_orbit_time(Orbit orbit, double dt) {
+	double ta = orbit.ta;
+	double e = orbit.e;
+	double a = orbit.a;
+	double mu = orbit.cb->mu;
+	double t = calc_orbit_time_since_periapsis(orbit);
+	double target_t = t + dt;
+	double T = calc_orbital_period(orbit);
+	
+	double n = sqrt(mu / pow(fabs(a),3));
+	
+	double step = deg2rad(5);
+	// if dt is basically 0, only add step, as this gets subtracted after the loop (not going inside loop)
+	if(e<1) ta += fabs(t-target_t) > 1 ? dt/T * M_PI*2 : step;
+	
+	ta = pi_norm(ta);
+	while(target_t > T && e < 1) target_t -= T;
+	while(target_t < 0 && e < 1) target_t += T;
+	
+	int c = 0;
+	
+	while(fabs(t-target_t) > 1) {
+		c++;
+		// prevent endless loops (floating point imprecision can lead to not changing values for very small steps)
+		if(c == 500) break;
+		
+		ta = pi_norm(ta);
+		if(e < 1) {
+			double E = acos((e + cos(ta))/(1 + e*cos(ta)));
+			t = (E - e*sin(E))/n;
+			if(ta > M_PI) t = T-t;
+		} else {
+			//printf("[%f %f %f %f]\n", t/(24*60*60), target_t/(24*60*60), (target_t-t)/(24*60*60), rad2deg(theta));
+			double F = acosh((e + cos(ta))/(1 + e*cos(ta)));
+			t = (e*sinh(F) - F)/n;
+			if(ta > M_PI) t *= -1;
+			if(isnan(t)) {
+				step /= 2;
+				ta -= step;
+				t = 100;	// to not exit the loop;
+				continue;
+			}
+		}
+		
+		// check in which half t is with respect to target_t (forwards or backwards from target_t) and move it closer
+		if(target_t < T/2 || e > 1) {
+			if(t > target_t && (t < target_t+T/2  || e > 1)) {
+				if (step > 0) step *= -1.0 / 4;
+			} else {
+				if (step < 0) step *= -1.0 / 4;
+			}
+		} else {
+			if(t < target_t && t > target_t-T/2) {
+				if (step < 0) step *= -1.0 / 4;
+			} else {
+				if (step > 0) step *= -1.0 / 4;
+			}
+		}
+		ta += step;
+	}
+	ta -= step; // reset theta1 from last change inside the loop
+	orbit.ta = ta;
+	return orbit;
+}
+
+OSV propagate_osv_time(OSV osv, Body *cb, double dt) {
+	Orbit orbit = constr_orbit_from_osv(osv.r, osv.v, cb);
+	orbit = propagate_orbit_time(orbit, dt);
+	return osv_from_orbit(orbit);
+}
+
+OSV propagate_osv_ta(OSV osv, Body *cb, double delta_ta) {
+	Orbit orbit = constr_orbit_from_osv(osv.r, osv.v, cb);
+	orbit.ta = pi_norm(orbit.ta+delta_ta);
+	return osv_from_orbit(orbit);
 }

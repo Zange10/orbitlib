@@ -32,5 +32,10 @@ double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anoma
 
 OSV osv_from_orbit(Orbit orbit);
 
+Orbit propagate_orbit_time(Orbit orbit, double dt);
+
+OSV propagate_osv_time(OSV osv, Body *cb, double dt);
+
+OSV propagate_osv_ta(OSV osv, Body *cb, double delta_ta);
 
 #endif //ORBITLIB_ORBITLIB_ORBIT_H
