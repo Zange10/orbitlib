@@ -2,13 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #include <urlmon.h>
 #pragma comment(lib, "urlmon.lib")  // Link against urlmon.dll
+#include <direct.h>    // _mkdir
+#define MKDIR(path) _mkdir(path)
 #else
-#include <sys/stat.h>
+#include <sys/stat.h>  // mkdir
+#include <sys/types.h>
+#define MKDIR(path) mkdir(path, 0755)
 #include <unistd.h>
 #endif
 
@@ -72,7 +77,8 @@ void download_file(const char *url, const char *filepath) {
 }
 
 void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step) {
-	if(body->orbit.cb == NULL || !directory_exists(ephem_directory)) return;
+	if(body->orbit.cb == NULL) return;
+	if(!directory_exists(ephem_directory)) MKDIR(ephem_directory);
 	
 	char filepath[50];
 	get_ephem_data_filepath(body->id, filepath);
