@@ -123,6 +123,7 @@ int init_available_systems_from_path(const char *directory, CelestSystem ***p_sy
 	}
 	
 	free(paths);
+	return num_systems;
 }
 
 void print_celestial_system(CelestSystem *system) {

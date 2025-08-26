@@ -54,4 +54,6 @@ void print_celestial_system_layer(CelestSystem *system, int layer);
 
 void print_celestial_system(CelestSystem *system);
 
+int init_available_systems_from_path(const char *directory, CelestSystem ***p_systems);
+
 #endif //ORBITLIB_ORBITLIB_CELESTIAL_H
