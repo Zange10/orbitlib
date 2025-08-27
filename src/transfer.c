@@ -114,9 +114,11 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 	double dt;
 	double a, e;
 	
+	enum LAMBERT_SOLVER_SUCCESS success = LAMBERT_MAX_ITERATIONS;
+	
 	for(int i = 0; i < 100; i++) {
 		ta0_pun = root_finder_monot_func_next_x(data);
-		if(i > 3 && last_ta0_pun == ta0_pun) break;	// increments are 0 (due to imprecision)
+		if(i > 3 && last_ta0_pun == ta0_pun) { success = LAMBERT_IMPRECISION; break;}	// increments are 0 (due to imprecision)
 		
 		ta0 = pi_norm(ta0_pun);
 		ta1 = pi_norm(ta0 + delta_ta);
@@ -128,7 +130,8 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 			printf("min ta0: %f°; max ta0: %f°\ne: %f; a: %f\n", rad2deg(min_ta0), rad2deg(max_ta0), e, a);
 			print_data_array2(data, "ta0", "dt");
 			printf("-------------\n\n");
-			exit(1);
+			success = LAMBERT_FAIL_ECC;
+			break;
 		} else if(e==1) e += 1e-10;	// no calculations for parabola -> make it a hyperbola
 		
 		double rp = r0*(1 + e * cos(ta0))/(1 + e);
@@ -171,16 +174,20 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 			printf("min ta0: %f°; max ta0: %f°\nt1: %fd; t2: %fd; T: %fd; T/2: %fd\ne: %f; a: %f\n", rad2deg(min_ta0), rad2deg(max_ta0), t1/86400, t2/86400, T/86400, T/2/86400, e, a);
 			print_data_array2(data, "ta0", "dt");
 			printf("-------------\n\n");
+			success = LAMBERT_FAIL_NAN;
 			break;
 		}
 		data_array2_insert_new(data, ta0_pun, dt - target_dt);
 		last_ta0_pun = ta0_pun;
 		
-		if(fabs(target_dt-dt) < 1) break;
+		if(fabs(target_dt-dt) < 1) {
+			success = LAMBERT_SUCCESS;
+			break;
+		}
 	}
 	
 	data_array2_free(data);
-	Lambert2 solution = {constr_orbit_from_elements(a, e, 0, 0, 0, 0, cb), ta0, ta1};
+	Lambert2 solution = {constr_orbit_from_elements(a, e, 0, 0, 0, 0, cb), ta0, ta1, success};
 	return solution;
 }
 
@@ -188,6 +195,10 @@ Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
 	double delta_ta = angle_vec3_vec3(r0, r1);
 	if (cross_vec3(r0, r1).z < 0) delta_ta = 2 * M_PI - delta_ta;
 	Lambert2 solution2d = calc_lambert2(mag_vec3(r0), mag_vec3(r1), delta_ta, target_dt, cb);
+	
+	if(solution2d.success == LAMBERT_FAIL_ECC) {
+		return (Lambert3) {.success = solution2d.success};
+	}
 	
 	Vector3 origin = {0, 0, 0};
 	Plane3 p_0 = constr_plane3(origin, vec3(1,0,0), vec3(0,1,0));

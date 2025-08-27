@@ -9,13 +9,17 @@ typedef struct Hohmann {
 	double dur, dv_dep, dv_arr;
 } Hohmann;
 
+enum LAMBERT_SOLVER_SUCCESS {LAMBERT_SUCCESS, LAMBERT_IMPRECISION, LAMBERT_MAX_ITERATIONS, LAMBERT_FAIL_NAN, LAMBERT_FAIL_ECC};
+
 typedef struct Lambert2 {
 	Orbit orbit;
 	double true_anomaly0, true_anomaly1;
+	enum LAMBERT_SOLVER_SUCCESS success;
 } Lambert2;
 
 typedef struct Lambert3 {
 	OSV osv0, osv1;
+	enum LAMBERT_SOLVER_SUCCESS success;
 } Lambert3;
 
 double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double new_apsis, struct Body *cb);
