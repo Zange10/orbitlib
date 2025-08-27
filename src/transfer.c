@@ -229,11 +229,11 @@ Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
 	
 	double arg_peri = 2*M_PI - ta0;
 	if(RAAN < M_PI) {
-		if(r1.z >= 0) arg_peri += angle_vec3_vec3(inters_line, r1);
-		else arg_peri += 2*M_PI - angle_vec3_vec3(inters_line, r1);
+		if(r0.z >= 0) arg_peri += angle_vec3_vec3(inters_line, r0);
+		else arg_peri += 2*M_PI - angle_vec3_vec3(inters_line, r0);
 	} else {
-		if(r1.z <= 0) arg_peri += angle_vec3_vec3(inters_line, r1)+M_PI;
-		else arg_peri += M_PI - angle_vec3_vec3(inters_line, r1);
+		if(r0.z <= 0) arg_peri += angle_vec3_vec3(inters_line, r0)+M_PI;
+		else arg_peri += M_PI - angle_vec3_vec3(inters_line, r0);
 	}
 	
 	Vector3 v_t0 = heliocentric_rot(v_t0_2d, RAAN, arg_peri, i);
