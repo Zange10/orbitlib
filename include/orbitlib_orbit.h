@@ -30,6 +30,8 @@ struct Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, Body *cb);
 
 double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anomaly);
 
+Vector3 heliocentric_rot(Vector2 v, double RAAN, double w, double incl);
+
 OSV osv_from_orbit(Orbit orbit);
 
 Orbit propagate_orbit_time(Orbit orbit, double dt);
