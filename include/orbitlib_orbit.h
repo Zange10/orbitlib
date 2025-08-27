@@ -44,6 +44,6 @@ double calc_orbit_apoapsis(struct Orbit orbit);
 
 double calc_orbit_periapsis(struct Orbit orbit);
 
-void print_orbit_info(struct Orbit orbit)
+void print_orbit_info(struct Orbit orbit);
 
 #endif //ORBITLIB_ORBITLIB_ORBIT_H
