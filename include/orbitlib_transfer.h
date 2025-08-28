@@ -24,7 +24,7 @@ typedef struct Lambert2 {
 } Lambert2;
 
 typedef struct Lambert3 {
-	OSV osv0, osv1;
+	Vector3 r0, v0, r1, v1;
 	enum LAMBERT_SOLVER_SUCCESS success;
 } Lambert3;
 
@@ -61,6 +61,8 @@ double dv_circ(struct Body *body, double periapsis_altitude, double vinf);
 double dv_capture(struct Body *body, double periapsis_altitude, double vinf);
 
 double get_flyby_periapsis(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body);
+
+double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body);
 
 // calculate and return fly-by hyperbola parameters
 // (v_arr irrelevant for departure hyperbola, v_dep irrelevant for arrival hyperbola, h_pe irrelevant for fly-by hyperbola)
