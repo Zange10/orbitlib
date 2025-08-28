@@ -4,7 +4,7 @@
 #include "orbitlib_orbit.h"
 #include "orbitlib_ephemeris.h"
 
-struct Body {
+typedef struct Body {
 	char name[32];
 	double color[3];			// color used for orbit and body visualization
 	int id;                		// ID given by JPL's Horizon API
@@ -18,7 +18,7 @@ struct Body {
 	struct Orbit orbit;     	// orbit of body at ut0
 	struct Ephem *ephem;		// Ephemeris of body (if available)
 	int num_ephems;				// number of states stored in ephemeris
-};
+} Body;
 
 
 

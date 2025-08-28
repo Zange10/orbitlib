@@ -9,6 +9,15 @@ typedef struct Hohmann {
 	double dur, dv_dep, dv_arr;
 } Hohmann;
 
+enum Transfer_Type {
+	capcap,
+	circcap,
+	capcirc,
+	circcirc,
+	capfb,
+	circfb
+};
+
 enum LAMBERT_SOLVER_SUCCESS {
 	LAMBERT_SUCCESS,
 	LAMBERT_IMPRECISION,
@@ -68,5 +77,6 @@ double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body);
 // (v_arr irrelevant for departure hyperbola, v_dep irrelevant for arrival hyperbola, h_pe irrelevant for fly-by hyperbola)
 HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, struct Body *body, double h_pe, enum HyperbolaType type);
 
+bool is_flyby_viable(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body, double precision);
 
 #endif //ORBITLIB_ORBITLIB_TRANSFER_H

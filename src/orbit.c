@@ -150,6 +150,12 @@ OSV osv_from_orbit(Orbit orbit) {
 	return osv;
 }
 
+OSV osv_from_elements(Orbit orbit, double epoch) {
+	double dt = (epoch - orbit.cb->system->ut0) * (24 * 60 * 60);
+	orbit = propagate_orbit_time(orbit, dt);
+	return osv_from_orbit(orbit);
+}
+
 double calc_orbit_time_since_periapsis(Orbit orbit) {
 	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
 	double t;

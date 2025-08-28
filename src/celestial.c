@@ -121,6 +121,7 @@ CelestSystem ** init_available_systems_from_path(const char *directory, int *num
 void free_celestial_system(CelestSystem *system) {
 	if(system == NULL) return;
 	for(int i = 0; i < system->num_bodies; i++) {
+		if(system->bodies[i]->system != NULL) free_celestial_system(system->bodies[i]->system);
 		if(system->bodies[i]->ephem != NULL) free(system->bodies[i]->ephem);
 		free(system->bodies[i]);
 	}

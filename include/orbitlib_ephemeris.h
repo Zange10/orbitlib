@@ -31,6 +31,6 @@ void print_ephem(struct Ephem ephem);
 void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step, const char *ephem_directory);
 
 
-OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, struct Body *cb);
+OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, Body *cb);
 
 #endif //ORBITLIB_ORBITLIB_EPHEMERIS_H
