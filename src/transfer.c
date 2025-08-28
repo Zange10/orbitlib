@@ -245,3 +245,61 @@ double dv_capture(struct Body *body, double periapsis_altitude, double vinf) {
 	periapsis_altitude += body->radius;
 	return sqrt(2 * body->mu / periapsis_altitude + vinf * vinf) - sqrt(2 * body->mu / periapsis_altitude);
 }
+
+double get_flyby_periapsis(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body) {
+	Vector3 v1 = subtract_vec3(v_arr, v_body);
+	Vector3 v2 = subtract_vec3(v_dep, v_body);
+	double beta = (M_PI - angle_vec3_vec3(v1, v2))/2;
+	return (1 / cos(beta) - 1) * (body->mu / (pow(mag_vec3(v1), 2)));
+}
+
+HyperbolaLegParams get_dep_hyperbola_params(Vector3 v_inf) {
+	Plane3 xy = constr_plane3(vec3(0,0,0), vec3(1,0,0), vec3(0,1,0));
+	Plane3 xz = constr_plane3(vec3(0,0,0), vec3(1,0,0), vec3(0,0,1));
+	double decl = angle_plane3_vec3(xy, v_inf);
+	decl = v_inf.z < 0 ? -fabs(decl) : fabs(decl);
+	double bplane_angle = -angle_plane3_vec3(xz, v_inf);
+	if(cross_vec3(v_inf,vec3(0,1,0)).z < 0) bplane_angle = M_PI-bplane_angle;
+	bplane_angle = pi_norm(bplane_angle);
+	// bvazi only relevant with given inclination (not yet implemented here, but implemented for fly-by)
+	HyperbolaLegParams hyp_params = {decl, bplane_angle, M_PI/2};
+	return hyp_params;
+}
+
+HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, struct Body *body, double h_pe, enum HyperbolaType type) {
+	Vector3 vinf_arr = subtract_vec3(v_arr, v_body);
+	Vector3 vinf_dep = subtract_vec3(v_dep, v_body);
+	HyperbolaParams hyperbola_params = {.type = type};
+	
+	if(type != HYP_DEPARTURE) {
+		hyperbola_params.incoming = get_dep_hyperbola_params(vinf_arr);
+		// invert hyperbola direction (departure to arrival hyperbola)
+		hyperbola_params.incoming.decl *= -1;
+		hyperbola_params.incoming.bplane_angle = pi_norm(M_PI + hyperbola_params.incoming.bplane_angle);
+	}
+	if(type != HYP_ARRIVAL) hyperbola_params.outgoing = get_dep_hyperbola_params(vinf_dep);
+	if(type == HYP_FLYBY) {
+		Vector3 N = cross_vec3(vinf_arr, vinf_dep);
+		Vector3 B_arr = cross_vec3(vinf_arr, N);
+		Vector3 B_dep = cross_vec3(vinf_dep, scale_vec3(N,-1));
+		
+		// BVAZI (Azimuth of B-vector) calculated from south
+		hyperbola_params.incoming.bvazi = angle_vec3_vec3(vec3(0,0,-1),B_arr);
+		hyperbola_params.outgoing.bvazi = angle_vec3_vec3(vec3(0,0,-1),B_dep);
+		
+		// if retrograde orbit
+		if(N.z < 0) {
+			hyperbola_params.incoming.bvazi *= -1;
+			hyperbola_params.outgoing.bvazi *= -1;
+		}
+	}
+	
+	double rp = type == HYP_FLYBY ? get_flyby_periapsis(v_arr, v_dep, v_body, body) : h_pe+body->radius;
+	double c3_energy = sq_mag_vec3(type != HYP_DEPARTURE ? vinf_arr : vinf_dep);
+	
+	hyperbola_params.rp = rp;
+	hyperbola_params.c3_energy = c3_energy;
+	
+	return hyperbola_params;
+}
+
