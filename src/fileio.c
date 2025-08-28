@@ -56,6 +56,53 @@ void download_file(const char *url, const char *filepath) {
 #endif
 }
 
+enum STORED_UNITS {UNITS_LEGACY, UNITS_M_DEG_PA};
+
+void store_body_in_config_file(FILE *file, struct Body *body, CelestSystem *system) {
+	fprintf(file, "[%s]\n", body->name);
+	fprintf(file, "color = [%.3f, %.3f, %.3f]\n", body->color[0], body->color[1], body->color[2]);
+	fprintf(file, "id = %d\n", body->id);
+	fprintf(file, "gravitational_parameter = %.9g\n", body->mu);
+	fprintf(file, "radius = %f\n", body->radius);
+	fprintf(file, "rotational_period = %f\n", body->rotation_period);
+	fprintf(file, "sea_level_pressure = %f\n", body->sl_atmo_p);
+	fprintf(file, "scale_height = %.0f\n", body->scale_height);
+	fprintf(file, "atmosphere_altitude = %f\n", body->atmo_alt);
+	if(body != system->cb) {
+		fprintf(file, "semi_major_axis = %f\n", body->orbit.a);
+		fprintf(file, "eccentricity = %f\n", body->orbit.e);
+		fprintf(file, "inclination = %f\n", rad2deg(body->orbit.i));
+		fprintf(file, "raan = %f\n", rad2deg(body->orbit.raan));
+		fprintf(file, "argument_of_periapsis = %f\n", rad2deg(body->orbit.arg_peri));
+		fprintf(file, "true_anomaly_ut0 = %f\n", rad2deg(body->orbit.ta));
+		fprintf(file, "parent_body = %s", body->orbit.cb->name);
+	}
+}
+
+void store_system_in_config_file(CelestSystem *system, const char *directory) {
+	char filename[50];
+	sprintf(filename, "%s/%s.cfg", directory, system->name);
+	
+	FILE *file;
+	file = fopen(filename,"w");
+	
+	fprintf(file, "[%s]\n", system->name);
+	fprintf(file, "propagation_method = %s\n", system->prop_method == ORB_ELEMENTS ? "ELEMENTS" : "EPHEMERIDES");
+	fprintf(file, "ut0 = %f\n", system->ut0);
+	fprintf(file, "number_of_bodies = %d\n", system->num_bodies);
+	fprintf(file, "central_body = %s\n", system->cb->name);
+	fprintf(file, "units = M_DEG_PA\n\n");
+	
+	store_body_in_config_file(file, system->cb, system);
+	
+	for(int i = 0; i < system->num_bodies; i++) {
+		fprintf(file, "\n");
+		store_body_in_config_file(file, system->bodies[i], system);
+	}
+	
+	fclose(file);
+}
+
 void parse_and_sort_into_celestial_subsystems(CelestSystem *system) {
 	system->cb->system = system;
 	
@@ -120,8 +167,6 @@ int get_key_and_value_from_config(char *key, char *value, char *line) {
 	}
 	return 0;
 }
-
-enum STORED_UNITS {UNITS_LEGACY, UNITS_M_DEG_PA};
 
 struct Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum STORED_UNITS units) {
 	struct Body *body = new_body();
