@@ -75,6 +75,15 @@ struct Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, struct Body *cb) {
 	return new_orbit;
 }
 
+Vector2 calc_vel_vec2(double r_mag, double v_mag, double true_anomaly, double flight_path_angle) {
+	Vector2 r_norm = {cos(true_anomaly), sin(true_anomaly)};
+	Vector2 r = scale_vec2(r_norm, r_mag);
+	Vector2 n = {-r.y, r.x};
+	Vector2 v = rotate_vec2(n, flight_path_angle);
+	v = scale_vec2(v, v_mag/ mag_vec2(v));
+	return v;
+}
+
 double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anomaly) {
 	// Solve Kepler's equation
 	double ecc_anomaly = mean_anomaly; // Initial guess
@@ -88,21 +97,32 @@ double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anoma
 	return 2 * atan(sqrt((1 + orbit.e) / (1 - orbit.e)) * tan(ecc_anomaly / 2));
 }
 
-Vector2 calc_orbital_speed_2d(double r_mag, double v_mag, double theta, double gamma) {
-	Vector2 r_norm = {cos(theta), sin(theta)};
+Vector2 calc_orbital_speed_2d(double r_mag, double v_mag, double true_anomaly, double flight_path_angle) {
+	Vector2 r_norm = {cos(true_anomaly), sin(true_anomaly)};
 	Vector2 r = scale_vec2(r_norm, r_mag);
 	Vector2 n = {-r.y, r.x};
-	Vector2 v = rotate_vec2(n, gamma);
+	Vector2 v = rotate_vec2(n, flight_path_angle);
 	v = scale_vec2(v, v_mag/ mag_vec2(v));
 	
 	return v;
 }
 
-Vector3 heliocentric_rot(Vector2 v, double RAAN, double w, double incl) {
+double calc_orbit_flight_path_angle(double eccentricity, double true_anomaly) {
+	return atan(eccentricity*sin(true_anomaly)/(1 + eccentricity*cos(true_anomaly)));
+}
+
+Vector3 heliocentric_rot(Vector2 v, double raan, double argp, double incl) {
+	double sin_raan = sin(raan);
+	double sin_argp = sin(argp);
+	double sin_incl = sin(incl);
+	double cos_raan = cos(raan);
+	double cos_argp = cos(argp);
+	double cos_incl = cos(incl);
+	
 	double Q[3][3] = {
-			{-sin(RAAN)*cos(incl)*sin(w) + cos(RAAN)*cos(w), -sin(RAAN)*cos(incl)*cos(w) - cos(RAAN)*sin(w), sin(RAAN)*sin(incl)},
-			{cos(RAAN)*cos(incl)*sin(w) + sin(RAAN)*cos(w),  cos(RAAN)*cos(incl)*cos(w) - sin(RAAN)*sin(w),  -cos(RAAN)*sin(incl)},
-			{sin(incl)*sin(w),                               sin(incl)*cos(w),                               cos(incl)}};
+			{-sin_raan*cos_incl*sin_argp + cos_raan*cos_argp, -sin_raan*cos_incl*cos_argp - cos_raan*sin_argp,  sin_raan*sin_incl},
+			{ cos_raan*cos_incl*sin_argp + sin_raan*cos_argp,  cos_raan*cos_incl*cos_argp - sin_raan*sin_argp, -cos_raan*sin_incl},
+			{ sin_incl*sin_argp,                               sin_incl*cos_argp,                               cos_incl}};
 	
 	double v_vec[3] = {v.x, v.y, 0};
 	double result[3] = {0,0,0};
@@ -117,11 +137,11 @@ Vector3 heliocentric_rot(Vector2 v, double RAAN, double w, double incl) {
 }
 
 OSV osv_from_orbit(Orbit orbit) {
-	double gamma = atan(orbit.e*sin(orbit.ta)/(1+orbit.e*cos(orbit.ta)));
+	double flight_path_angle = calc_orbit_flight_path_angle(orbit.e, orbit.ta);
 	double r_mag = orbit.a*(1-pow(orbit.e,2)) / (1+orbit.e*cos(orbit.ta));
 	double v_mag = sqrt(orbit.cb->mu*(2/r_mag - 1/orbit.a));
 	Vector2 r_2d = {cos(orbit.ta) * r_mag, sin(orbit.ta) * r_mag};
-	Vector2 v_2d = calc_orbital_speed_2d(r_mag, v_mag, orbit.ta, gamma);
+	Vector2 v_2d = calc_orbital_speed_2d(r_mag, v_mag, orbit.ta, flight_path_angle);
 	
 	Vector3 r = heliocentric_rot(r_2d, orbit.raan, orbit.arg_peri, orbit.i);
 	Vector3 v = heliocentric_rot(v_2d, orbit.raan, orbit.arg_peri, orbit.i);

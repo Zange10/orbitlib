@@ -24,15 +24,6 @@ Hohmann calc_hohmann_transfer(double r0, double r1, struct Body *cb) {
 	return (Hohmann) {dur, dv_dep, dv_arr};
 }
 
-Vector2 calc_v_2d(double r_mag, double v_mag, double true_anomaly, double gamma) {
-	Vector2 r_norm = {cos(true_anomaly), sin(true_anomaly)};
-	Vector2 r = scale_vec2(r_norm, r_mag);
-	Vector2 n = {-r.y, r.x};
-	Vector2 v = rotate_vec2(n, gamma);
-	v = scale_vec2(v, v_mag/ mag_vec2(v));
-	return v;
-}
-
 // dt --> 0
 double departure_true_anomaly_at_min_dt(double r0, double r1, double delta_ta) {
 	delta_ta = pi_norm(delta_ta);
@@ -192,9 +183,11 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 }
 
 Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
+	double r0_mag = mag_vec3(r0);
+	double r1_mag = mag_vec3(r1);
 	double delta_ta = angle_vec3_vec3(r0, r1);
 	if (cross_vec3(r0, r1).z < 0) delta_ta = 2 * M_PI - delta_ta;
-	Lambert2 solution2d = calc_lambert2(mag_vec3(r0), mag_vec3(r1), delta_ta, target_dt, cb);
+	Lambert2 solution2d = calc_lambert2(r0_mag, r1_mag, delta_ta, target_dt, cb);
 	
 	if(solution2d.success == LAMBERT_FAIL_ECC) {
 		return (Lambert3) {.success = solution2d.success};
@@ -208,27 +201,27 @@ Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
 	double ta0 = solution2d.true_anomaly0;
 	double ta1 = solution2d.true_anomaly1;
 	
-	double fpa0 = atan(e*sin(ta0)/(1 + e*cos(ta0)));
-	double fpa1 = atan(e*sin(ta1)/(1 + e*cos(ta1)));
+	double fpa0 = calc_orbit_flight_path_angle(e, ta0);
+	double fpa1 = calc_orbit_flight_path_angle(e, ta1);
 	
-	double v_t0_mag = calc_orbital_speed(orbit2d, mag_vec3(r0));
-	double v_t1_mag = calc_orbital_speed(orbit2d, mag_vec3(r1));
+	double v0_mag = calc_orbital_speed(orbit2d, r0_mag);
+	double v1_mag = calc_orbital_speed(orbit2d, r1_mag);
 	
-	Vector2 v_t0_2d = calc_v_2d(mag_vec3(r0), v_t0_mag, ta0, fpa0);
-	Vector2 v_t1_2d = calc_v_2d(mag_vec3(r1), v_t1_mag, ta1, fpa1);
+	Vector2 v0_2d = calc_vel_vec2(r0_mag, v0_mag, ta0, fpa0);
+	Vector2 v1_2d = calc_vel_vec2(r1_mag, v1_mag, ta1, fpa1);
 	
 	// calculate RAAN, inclination and argument of periapsis
 	Vector3 inters_line = calc_intersecting_line_dir_plane3(p_0, p_T);
 	if(inters_line.y < 0) inters_line = scale_vec3(inters_line, -1); // for rotation of raan in clock-wise direction
 	Vector3 in_plane_up = cross_vec3(inters_line, norm_vector_plane3(p_T));    // 90° to intersecting line and norm vector of plane
 	if(in_plane_up.z < 0) in_plane_up = scale_vec3(in_plane_up, -1);   // this vector is always 90° before raan for prograde orbits
-	double RAAN = in_plane_up.x <= 0 ? angle_vec3_vec3(vec3(1,0,0), inters_line) : angle_vec3_vec3(vec3(1,0,0), inters_line) + M_PI;   // raan 90° behind in_plane_up
+	double raan = in_plane_up.x <= 0 ? angle_vec3_vec3(vec3(1,0,0), inters_line) : angle_vec3_vec3(vec3(1,0,0), inters_line) + M_PI;   // raan 90° behind in_plane_up
 	
 	//double i = angle_plane_plane(p_T, p_0);   // can create angles greater than 90°
 	double i = angle_plane3_vec3(p_0, in_plane_up);   // also possible to get angle between p_0 and in_plane_up
 	
 	double arg_peri = 2*M_PI - ta0;
-	if(RAAN < M_PI) {
+	if(raan < M_PI) {
 		if(r0.z >= 0) arg_peri += angle_vec3_vec3(inters_line, r0);
 		else arg_peri += 2*M_PI - angle_vec3_vec3(inters_line, r0);
 	} else {
@@ -236,10 +229,10 @@ Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
 		else arg_peri += M_PI - angle_vec3_vec3(inters_line, r0);
 	}
 	
-	Vector3 v_t0 = heliocentric_rot(v_t0_2d, RAAN, arg_peri, i);
-	Vector3 v_t1 = heliocentric_rot(v_t1_2d, RAAN, arg_peri, i);
+	Vector3 v0 = heliocentric_rot(v0_2d, raan, arg_peri, i);
+	Vector3 v1 = heliocentric_rot(v1_2d, raan, arg_peri, i);
 	
-	return (Lambert3) {r0, v_t0, r1, v_t1};
+	return (Lambert3) {r0, v0, r1, v1, solution2d.success};
 }
 
 
