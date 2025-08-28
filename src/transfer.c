@@ -312,6 +312,6 @@ HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_bod
 bool is_flyby_viable(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body, double precision) {
 	double rp = get_flyby_periapsis(v_arr, v_dep, v_body, body);
 	if(rp < body->radius+body->atmo_alt) return false;
-	if(fabs(mag_vec3(subtract_vec3(v_arr, v_body)) - mag_vec3(subtract_vec3(v_arr, v_body))) > precision) return false;
+	if(fabs(mag_vec3(subtract_vec3(v_dep, v_body)) - mag_vec3(subtract_vec3(v_arr, v_body))) > precision) return false;
 	return true;
 }

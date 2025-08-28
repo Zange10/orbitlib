@@ -103,10 +103,10 @@ CelestSystem ** init_available_systems_from_path(const char *directory, int *num
 		return 0;
 	}
 	
-	CelestSystem **p_systems = (CelestSystem **) malloc(4 * sizeof(struct System*));	// A maximum of 10 systems seems reasonable
-	
 	*num_systems = 0;
 	char **paths = list_files_with_extension(directory, ".cfg", num_systems);
+	
+	CelestSystem **p_systems = (CelestSystem **) malloc(*num_systems * sizeof(struct System*));
 	
 	char path[50];
 	for(int i = 0; i < *num_systems; i++) {
@@ -125,7 +125,7 @@ void free_celestial_system(CelestSystem *system) {
 		if(system->bodies[i]->ephem != NULL) free(system->bodies[i]->ephem);
 		free(system->bodies[i]);
 	}
-	free(system->cb);
+	if(system->cb->orbit.cb == NULL) free(system->cb);
 	free(system);
 }
 
