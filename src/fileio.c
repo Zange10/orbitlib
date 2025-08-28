@@ -121,7 +121,9 @@ int get_key_and_value_from_config(char *key, char *value, char *line) {
 	return 0;
 }
 
-struct Body * load_body_from_config_file(FILE *file, CelestSystem *system) {
+enum STORED_UNITS {UNITS_LEGACY, UNITS_M_DEG_PA};
+
+struct Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum STORED_UNITS units) {
 	struct Body *body = new_body();
 	double mean_anomaly = 0;
 	double g_asl = 0;
@@ -183,6 +185,13 @@ struct Body * load_body_from_config_file(FILE *file, CelestSystem *system) {
 			}
 		}
 	}
+	if(units == UNITS_LEGACY) {
+		body->radius *= 1e3;  // Convert from km to m
+		body->sl_atmo_p *= 1e3;  // Convert from kpa to pa
+		body->atmo_alt *= 1e3;  // Convert from km to m
+		body->orbit.a *= 1e3;  // Convert from km to m
+	}
+	
 	if(has_g_asl) body->mu = 9.81*g_asl * body->radius*body->radius;
 	
 	if(system != NULL) {
@@ -207,6 +216,8 @@ struct Body * load_body_from_config_file(FILE *file, CelestSystem *system) {
 
 
 CelestSystem * load_celestial_system_from_cfg_file(char *filename) {
+	enum STORED_UNITS units = UNITS_LEGACY;
+	
 	CelestSystem *system = new_system();
 	system->num_bodies = 0;
 	system->prop_method = ORB_ELEMENTS;
@@ -236,19 +247,21 @@ CelestSystem * load_celestial_system_from_cfg_file(char *filename) {
 					sscanf(value, "%d", &system->num_bodies);
 				} else if (strcmp(key, "central_body") == 0) {
 					sprintf(central_body_name, "%s", value);
+				} else if (strcmp(key, "units") == 0) {
+					if(strcmp(value, "M_DEG_PA") == 0) units = UNITS_M_DEG_PA;
 				}
 			}
 		}
 	}
 	
-	struct Body *cb = load_body_from_config_file(file, NULL);
+	struct Body *cb = load_body_from_config_file(file, NULL, units);
 	
 	if(cb == NULL) {printf("Couldn't load Central Body!\n"); free(system); return NULL;}
 	if(strcmp(central_body_name, cb->name) != 0) {printf("Central Body not in first position!\n"); free(system); free(cb); return NULL;}
 	
 	system->cb = cb;
 	system->bodies = (struct Body**) calloc(system->num_bodies, sizeof(struct Body*));
-	for(int i = 0; i < system->num_bodies; i++) system->bodies[i] = load_body_from_config_file(file, system);
+	for(int i = 0; i < system->num_bodies; i++) system->bodies[i] = load_body_from_config_file(file, system, units);
 	
 	if(system->prop_method == EPHEMS) {
 		for(int i = 0; i < system->num_bodies; i++) {
