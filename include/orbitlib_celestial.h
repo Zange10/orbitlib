@@ -58,4 +58,10 @@ void free_celestial_system(CelestSystem *system);
 
 void free_celestial_systems(CelestSystem **systems, int num_systems);
 
+double radius2alt(Body *body, double radius);
+
+double alt2radius(Body *body, double altitude);
+
+double altatmo2radius(Body *body, double altitude_above_atmosphere);
+
 #endif //ORBITLIB_ORBITLIB_CELESTIAL_H

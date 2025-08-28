@@ -236,14 +236,12 @@ Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
 }
 
 
-double dv_circ(struct Body *body, double periapsis_altitude, double vinf) {
-	periapsis_altitude += body->radius;
-	return sqrt(2 * body->mu / periapsis_altitude + vinf * vinf) - sqrt(body->mu / periapsis_altitude);
+double dv_circ(struct Body *body, double rp, double vinf) {
+	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(body->mu / rp);
 }
 
-double dv_capture(struct Body *body, double periapsis_altitude, double vinf) {
-	periapsis_altitude += body->radius;
-	return sqrt(2 * body->mu / periapsis_altitude + vinf * vinf) - sqrt(2 * body->mu / periapsis_altitude);
+double dv_capture(struct Body *body, double rp, double vinf) {
+	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(2 * body->mu / rp);
 }
 
 double get_flyby_periapsis(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body) {
@@ -311,3 +309,9 @@ HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_bod
 	return hyperbola_params;
 }
 
+bool is_flyby_viable(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body, double precision) {
+	double rp = get_flyby_periapsis(v_arr, v_dep, v_body, body);
+	if(rp < body->radius+body->atmo_alt) return false;
+	if(fabs(mag_vec3(subtract_vec3(v_arr, v_body)) - mag_vec3(subtract_vec3(v_arr, v_body))) > precision) return false;
+	return true;
+}

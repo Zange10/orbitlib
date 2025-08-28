@@ -139,3 +139,17 @@ void print_celestial_system(CelestSystem *system) {
 	printf("%s:\n%s\n", system->name, system->cb->name);
 	print_celestial_system_layer(system, 1);
 }
+
+
+
+double radius2alt(Body *body, double radius) {
+	return radius-body->radius;
+}
+
+double alt2radius(Body *body, double altitude) {
+	return altitude+body->radius;
+}
+
+double altatmo2radius(Body *body, double altitude_above_atmosphere) {
+	return altitude_above_atmosphere + body->radius + body->atmo_alt;
+}
