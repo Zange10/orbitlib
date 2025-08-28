@@ -42,6 +42,8 @@ OSV osv_from_elements(Orbit orbit, double epoch);
 
 double calc_orbit_time_since_periapsis(Orbit orbit);
 
+double calc_orbital_period(Orbit orbit);
+
 Orbit propagate_orbit_time(Orbit orbit, double dt);
 
 OSV propagate_osv_time(OSV osv, Body *cb, double dt);
