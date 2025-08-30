@@ -50,6 +50,15 @@ int is_string_valid_date_format(const char *s, enum DateType date_type);
  */
 void date_to_string(Datetime date, char *s, int clocktime);
 
+/**
+ * @brief Returns a string with the clocktime (hh:mm or hh:mm:ss)
+ *
+ * @param date The date to be converted to a string
+ * @param s The string the date should be saved in
+ * @param seconds Set to 1 if seconds should be shown, 0 if only hours and minutes should be shown
+ */
+void clocktime_to_string(Datetime date, char *s, int seconds);
+
 
 /**
  * @brief Parses string and returns date (ISO 8601 or Kerbal time) (excluding time)
