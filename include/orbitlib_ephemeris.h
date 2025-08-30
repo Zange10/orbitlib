@@ -30,7 +30,18 @@ void print_ephem(struct Ephem ephem);
  */
 void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step, const char *ephem_directory);
 
-
+/**
+ * @brief Interpolates an ephemeris list to get the state vector at a given epoch
+ *
+ * Uses the provided list of ephemeris entries to compute the OSV (position and velocity)
+ * of a body at the specified epoch, relative to the given central body.
+ *
+ * @param ephem_list Array of ephemeris entries
+ * @param num_ephems Number of entries in the ephemeris list
+ * @param epoch Time at which to compute the state (Julian Date)
+ * @param cb Pointer to the central body
+ * @return OSV (position and velocity) of the body at the given epoch
+ */
 OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, Body *cb);
 
 #endif //ORBITLIB_ORBITLIB_EPHEMERIS_H

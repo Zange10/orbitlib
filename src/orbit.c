@@ -111,6 +111,43 @@ double calc_orbit_flight_path_angle(double eccentricity, double true_anomaly) {
 	return atan(eccentricity*sin(true_anomaly)/(1 + eccentricity*cos(true_anomaly)));
 }
 
+double calc_orbit_time_since_periapsis(Orbit orbit) {
+	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
+	double t;
+	if(orbit.e < 1) {
+		double E = 2*atan(sqrt((1 - orbit.e)/(1 + orbit.e))*tan(orbit.ta/2));
+		t = (E - orbit.e*sin(E))/n;
+		if(t < 0) {
+			double T = 2*M_PI/n;
+			t += T;
+		}
+	} else {
+		double F = acosh((orbit.e + cos(orbit.ta)) / (1 + orbit.e * cos(orbit.ta)));
+		t = (orbit.e * sinh(F) - F) / n;
+		if(orbit.ta > M_PI) t *= -1;
+	}
+	return t;
+}
+
+double calc_orbital_period(Orbit orbit) {
+	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
+	if(orbit.e < 1) return 2*M_PI/n;
+	else return INFINITY;
+}
+
+double calc_orbital_speed(struct Orbit orbit, double r) {
+	double v2 = orbit.cb->mu * (2/r - 1/orbit.a);
+	return sqrt(v2);
+}
+
+double calc_orbit_apoapsis(struct Orbit orbit) {
+	return orbit.a*(1+orbit.e) - orbit.cb->radius;
+}
+
+double calc_orbit_periapsis(struct Orbit orbit) {
+	return orbit.a*(1-orbit.e) - orbit.cb->radius;
+}
+
 Vector3 heliocentric_rot(Vector2 v, double raan, double argp, double incl) {
 	double sin_raan = sin(raan);
 	double sin_argp = sin(argp);
@@ -154,30 +191,6 @@ OSV osv_from_elements(Orbit orbit, double epoch) {
 	double dt = (epoch - orbit.cb->system->ut0) * (24 * 60 * 60);
 	orbit = propagate_orbit_time(orbit, dt);
 	return osv_from_orbit(orbit);
-}
-
-double calc_orbit_time_since_periapsis(Orbit orbit) {
-	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
-	double t;
-	if(orbit.e < 1) {
-		double E = 2*atan(sqrt((1 - orbit.e)/(1 + orbit.e))*tan(orbit.ta/2));
-		t = (E - orbit.e*sin(E))/n;
-		if(t < 0) {
-			double T = 2*M_PI/n;
-			t += T;
-		}
-	} else {
-		double F = acosh((orbit.e + cos(orbit.ta)) / (1 + orbit.e * cos(orbit.ta)));
-		t = (orbit.e * sinh(F) - F) / n;
-		if(orbit.ta > M_PI) t *= -1;
-	}
-	return t;
-}
-
-double calc_orbital_period(Orbit orbit) {
-	double n = sqrt(orbit.cb->mu / pow(fabs(orbit.a),3));
-	if(orbit.e < 1) return 2*M_PI/n;
-	else return INFINITY;
 }
 
 
@@ -256,19 +269,6 @@ OSV propagate_osv_ta(OSV osv, Body *cb, double delta_ta) {
 	Orbit orbit = constr_orbit_from_osv(osv.r, osv.v, cb);
 	orbit.ta = pi_norm(orbit.ta+delta_ta);
 	return osv_from_orbit(orbit);
-}
-
-double calc_orbital_speed(struct Orbit orbit, double r) {
-	double v2 = orbit.cb->mu * (2/r - 1/orbit.a);
-	return sqrt(v2);
-}
-
-double calc_orbit_apoapsis(struct Orbit orbit) {
-	return orbit.a*(1+orbit.e) - orbit.cb->radius;
-}
-
-double calc_orbit_periapsis(struct Orbit orbit) {
-	return orbit.a*(1-orbit.e) - orbit.cb->radius;
 }
 
 

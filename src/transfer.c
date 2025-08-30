@@ -16,6 +16,14 @@ double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double 
 	return fabs(v1-v0);
 }
 
+double dv_circ(struct Body *body, double rp, double vinf) {
+	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(body->mu / rp);
+}
+
+double dv_capture(struct Body *body, double rp, double vinf) {
+	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(2 * body->mu / rp);
+}
+
 Hohmann calc_hohmann_transfer(double r0, double r1, struct Body *cb) {
 	double sma_pow_3 = pow(((r0 + r1) / 2),3);
 	double dur = M_PI * sqrt(sma_pow_3 / cb->mu);
@@ -235,14 +243,6 @@ Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb) {
 	return (Lambert3) {r0, v0, r1, v1, solution2d.success};
 }
 
-
-double dv_circ(struct Body *body, double rp, double vinf) {
-	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(body->mu / rp);
-}
-
-double dv_capture(struct Body *body, double rp, double vinf) {
-	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(2 * body->mu / rp);
-}
 
 double get_flyby_periapsis(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body) {
 	Vector3 v1 = subtract_vec3(v_arr, v_body);
