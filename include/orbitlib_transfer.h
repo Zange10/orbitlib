@@ -161,8 +161,8 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 /**
  * @brief Computes a 3D Lambert solution for an orbit transfer between two position vectors over a target time
  *
- * @param r0 Initial position vector in the same reference frame as v_dep and v_arr [m]
- * @param r1 Final position vector in the same reference frame as v_dep and v_arr [m]
+ * @param r0 Initial position vector [m]
+ * @param r1 Final position vector [m]
  * @param target_dt Desired transfer time [s]
  * @param cb Pointer to the central body
  * @return Lambert3 struct containing position, velocity vectors and solver status
