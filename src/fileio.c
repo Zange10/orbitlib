@@ -204,7 +204,16 @@ struct Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum 
 					sscanf(value, "%lf", &body->scale_height);
 				} else if (strcmp(key, "atmosphere_altitude") == 0) {
 					sscanf(value, "%lf", &body->atmo_alt);
-				} else if (strcmp(key, "semi_major_axis") == 0) {
+				} else if (strcmp(key, "north_pole_right_ascension") == 0) {
+					sscanf(value, "%lf", &body->north_pole_ra);
+					body->north_pole_ra = deg2rad(body->north_pole_ra);
+				} else if (strcmp(key, "north_pole_declination") == 0) {
+					sscanf(value, "%lf", &body->north_pole_decl);
+					body->north_pole_decl = deg2rad(body->north_pole_decl);
+				}  else if (strcmp(key, "rotation_ut0") == 0) {
+					sscanf(value, "%lf", &body->rot_ut0);
+					body->rot_ut0 = deg2rad(body->rot_ut0);
+				}  else if (strcmp(key, "semi_major_axis") == 0) {
 					sscanf(value, "%lf", &body->orbit.a);
 				} else if (strcmp(key, "eccentricity") == 0) {
 					sscanf(value, "%lf", &body->orbit.e);
@@ -226,6 +235,12 @@ struct Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum 
 				} else if (strcmp(key, "parent_body") == 0) {
 					sscanf(value, "%s", central_body_name);
 					has_central_body_name = 1;
+				} else if (strcmp(key, "is_homebody") == 0) {
+					char is_homebody[10];
+					sscanf(value, "%s", is_homebody);
+					if (strcmp(is_homebody, "True") == 0) {
+						system->home_body = body;
+					}
 				}
 			}
 		}
