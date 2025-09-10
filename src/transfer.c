@@ -251,12 +251,11 @@ double get_flyby_periapsis(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *b
 	return (1 / cos(beta) - 1) * (body->mu / (pow(mag_vec3(v1), 2)));
 }
 
-double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body) {
+double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Plane3 equatorial_plane) {
 	Vector3 v1 = subtract_vec3(v_arr, v_body);
 	Vector3 v2 = subtract_vec3(v_dep, v_body);
-	Plane3 ecliptic = constr_plane3(vec3(0, 0, 0), vec3(1, 0, 0), vec3(0, 1, 0));
 	Plane3 hyperbola_plane = constr_plane3(vec3(0, 0, 0), v1, v2);
-	return angle_plane3_plane3(ecliptic, hyperbola_plane);
+	return angle_plane3_plane3(equatorial_plane, hyperbola_plane);
 }
 
 HyperbolaLegParams get_dep_hyperbola_params(Vector3 v_inf) {
