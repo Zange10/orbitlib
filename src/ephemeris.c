@@ -52,18 +52,22 @@ void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime 
 			sprintf(timestep_s, "%d d", time_step.d);
 		} else return;
 		
+		char body_id[24];
+		if(body->id >= 20000000) sprintf(body_id, "DES=%d", body->id);
+		else sprintf(body_id, "%d", body->id);
+		
 		char url[256];
 		sprintf(url, "https://ssd.jpl.nasa.gov/api/horizons.api?"
 					 "format=text&"
-					 "COMMAND='%d'&"
-					 "OBJ_DATA='NO'&"
+					 "COMMAND='%s'&"
+					 "OBJ_DATA='YES'&"
 					 "MAKE_EPHEM='YES'&"
 					 "EPHEM_TYPE='VECTORS'&"
 					 "CENTER='500@%d'&"
 					 "START_TIME='%s'&"
 					 "STOP_TIME='%s'&"
 					 "STEP_SIZE='%s'&"
-					 "VEC_TABLE='2'", body->id, body->orbit.cb->id, d0_s, d1_s, timestep_s);
+					 "VEC_TABLE='2'", body_id, body->orbit.cb->id, d0_s, d1_s, timestep_s);
 		
 		download_file(url, filepath);
 	}
