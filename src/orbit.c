@@ -279,8 +279,8 @@ void print_orbit_info(struct Orbit orbit) {
 	struct Body *body = orbit.cb;
 	printf("\n______________________\nORBIT:\n\n");
 	printf("Orbiting: \t\t%s\n", body->name);
-	printf("Apoapsis:\t\t%g km\n", (calc_orbit_apoapsis(orbit)-body->radius)/1000);
-	printf("Periapsis:\t\t%g km\n", (calc_orbit_periapsis(orbit)-body->radius)/1000);
+	printf("Apoapsis:\t\t%g km\n", (calc_orbit_apoapsis(orbit))/1000);
+	printf("Periapsis:\t\t%g km\n", (calc_orbit_periapsis(orbit))/1000);
 	printf("Semi-major axis:\t%g km\n", orbit.a /1000);
 	printf("Inclination:\t\t%g°\n", rad2deg(orbit.i));
 	printf("Eccentricity:\t\t%g\n", orbit.e);
