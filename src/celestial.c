@@ -89,6 +89,15 @@ struct Body * get_body_by_name(char *name, CelestSystem *system) {
 	return NULL;
 }
 
+struct Body * get_body_by_id(int id, CelestSystem *system) {
+	if(id == system->cb->id) return system->cb;
+	for(int i = 0; i < system->num_bodies; i++) {
+		if(system->bodies[i] == NULL) return NULL;
+		if(system->bodies[i]->id == id) return system->bodies[i];
+	}
+	return NULL;
+}
+
 int get_body_system_id(struct Body *body, CelestSystem *system) {
 	for(int i = 0; i < system->num_bodies; i++) {
 		if(system->bodies[i] == body) return i;

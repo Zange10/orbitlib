@@ -123,6 +123,17 @@ CelestSystem * get_top_level_system(CelestSystem *system);
  */
 struct Body * get_body_by_name(char *name, CelestSystem *system);
 
+
+/**
+ * @brief Searches for a body by id within a given celestial system
+ *
+ * @param id ID of the body to find
+ * @param system Pointer to the system to search in
+ * @return Pointer to the body if found, NULL otherwise
+ */
+struct Body * get_body_by_id(int id, CelestSystem *system);
+
+
 /**
  * @brief Returns the index (system-local ID) of a body within a celestial system
  *
