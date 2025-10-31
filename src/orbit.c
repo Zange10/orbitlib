@@ -215,7 +215,7 @@ Orbit propagate_orbit_time(Orbit orbit, double dt) {
 	
 	int c = 0;
 	
-	while(fabs(t-target_t) > 1) {
+	while(fabs(t-target_t) > 0.001) {
 		c++;
 		// prevent endless loops (floating point imprecision can lead to not changing values for very small steps)
 		if(c == 500) break;
@@ -254,6 +254,7 @@ Orbit propagate_orbit_time(Orbit orbit, double dt) {
 		}
 		ta += step;
 	}
+//	printf("(%5d) %f\n", c, t-target_t);
 	ta -= step; // reset theta1 from last change inside the loop
 	orbit.ta = ta;
 	return orbit;

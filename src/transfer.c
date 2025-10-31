@@ -179,7 +179,7 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 		data_array2_insert_new(data, ta0_pun, dt - target_dt);
 		last_ta0_pun = ta0_pun;
 		
-		if(fabs(target_dt-dt) < 1) {
+		if(fabs(target_dt-dt) < 0.00001) {
 			success = LAMBERT_SUCCESS;
 			break;
 		}
