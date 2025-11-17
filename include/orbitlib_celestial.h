@@ -17,6 +17,9 @@ typedef struct Body {
 	double sl_atmo_p;           /**< Atmospheric pressure at sea level [Pa] */
 	double scale_height;        /**< Scale height of the atmosphere [m] */
 	double atmo_alt;            /**< Maximum altitude with atmosphere (KSP-specific) [m] */
+	double north_pole_ra;		/**< Right Ascension of the north pole relative to helio-centric coordinate system [rad] */
+	double north_pole_decl;		/**< Declination of the north pole relative to helio-centric coordinate system [rad] */
+	double rot_ut0;				/**< Rotation at UT0 (Angle between xz-plane (x+) and prime meridian) [rad] */
 	struct CelestSystem *system;/**< Pointer to the system this body is the central body of */
 	struct Orbit orbit;         /**< Orbit of the body at reference time (UT0) */
 	struct Ephem *ephem;        /**< Pointer to ephemeris data (if available) */
@@ -36,12 +39,13 @@ enum CelestSystemPropMethod {
  * @brief Represents a celestial system with a central body and orbiting bodies
  */
 typedef struct CelestSystem {
-	char name[50];                             /**< Name of the celestial system */
-	int num_bodies;                            /**< Number of bodies orbiting the central body */
-	struct Body *cb;                           /**< Central body of the system */
-	struct Body **bodies;                      /**< Array of pointers to orbiting bodies */
-	enum CelestSystemPropMethod prop_method;   /**< Propagation method: orbital elements or ephemerides */
-	double ut0;                                /**< Reference time (UT0) for the system */
+	char name[50];                             	/**< Name of the celestial system */
+	int num_bodies;                            	/**< Number of bodies orbiting the central body */
+	struct Body *cb;                           	/**< Central body of the system */
+	struct Body *home_body;						/**< Home body of the system (KSP-related; NULL if there is none) */
+	struct Body **bodies;                      	/**< Array of pointers to orbiting bodies */
+	enum CelestSystemPropMethod prop_method;   	/**< Propagation method: orbital elements or ephemerides */
+	double ut0;                                	/**< Reference time (UT0) for the system */
 } CelestSystem;
 
 /*
@@ -57,6 +61,16 @@ typedef struct CelestSystem {
  * @return Pointer to the newly created Body
  */
 struct Body * new_body();
+
+
+/**
+ * @brief Returns the equatorial frame of the body
+ *
+ * @param body The body
+ * @return The equatorial frame
+ */
+Plane3 get_body_equatorial_plane(Body *body);
+
 
 /**
  * @brief Sets the visualization color of a celestial body
@@ -108,6 +122,17 @@ CelestSystem * get_top_level_system(CelestSystem *system);
  * @return Pointer to the body if found, NULL otherwise
  */
 struct Body * get_body_by_name(char *name, CelestSystem *system);
+
+
+/**
+ * @brief Searches for a body by id within a given celestial system
+ *
+ * @param id ID of the body to find
+ * @param system Pointer to the system to search in
+ * @return Pointer to the body if found, NULL otherwise
+ */
+struct Body * get_body_by_id(int id, CelestSystem *system);
+
 
 /**
  * @brief Returns the index (system-local ID) of a body within a celestial system

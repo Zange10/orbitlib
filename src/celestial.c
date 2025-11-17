@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "orbitlib_fileio.h"
 
 
@@ -18,6 +19,9 @@ struct Body * new_body() {
 	new_body->sl_atmo_p = 0;
 	new_body->scale_height = 1000;
 	new_body->atmo_alt = 0;
+	new_body->north_pole_decl = M_PI/2;
+	new_body->north_pole_ra = 0;
+	new_body->rot_ut0 = 0;
 	new_body->system = NULL;
 	new_body->ephem = NULL;
 	new_body->num_ephems = 0;
@@ -33,6 +37,10 @@ struct Body * new_body() {
 	return new_body;
 }
 
+Plane3 get_body_equatorial_plane(Body *body) {
+	return constr_plane3_from_normal(vec3(0,0,0), vec3_from_angles(body->north_pole_ra, body->north_pole_decl));
+}
+
 void set_body_color(struct Body *body, double red, double green, double blue) {
 	body->color[0] = red;
 	body->color[1] = green;
@@ -45,6 +53,7 @@ CelestSystem * new_system() {
 	system->num_bodies = 0;
 	system->cb = NULL;
 	system->bodies = NULL;
+	system->home_body = NULL;
 	system->prop_method = EPHEMS;
 	system->ut0 = 0;
 	return system;
@@ -76,6 +85,15 @@ struct Body * get_body_by_name(char *name, CelestSystem *system) {
 			struct Body *body = get_body_by_name(name, system->bodies[i]->system);
 			if(body != NULL) return body;
 		}
+	}
+	return NULL;
+}
+
+struct Body * get_body_by_id(int id, CelestSystem *system) {
+	if(id == system->cb->id) return system->cb;
+	for(int i = 0; i < system->num_bodies; i++) {
+		if(system->bodies[i] == NULL) return NULL;
+		if(system->bodies[i]->id == id) return system->bodies[i];
 	}
 	return NULL;
 }

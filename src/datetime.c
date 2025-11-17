@@ -52,6 +52,11 @@ void date_to_string(Datetime date, char *s, int clocktime) {
 	if(clocktime) sprintf(s,"%s %02d:%02d:%02.0f", s, date.h, date.min, date.s);
 }
 
+void clocktime_to_string(Datetime date, char *s, int seconds) {
+	sprintf(s,"%02d:%02d", date.h, date.min);
+	if(seconds) sprintf(s,"%s:%02.0f", s, date.s);
+}
+
 Datetime date_from_string(char *s, enum DateType date_type) {
 	int year, month, day;	// "yyyy-mm-dd" (ISO 8601)  "yyyy-ddd" (Kerbal and ISO-like Kerbal)
 	char *ptr;

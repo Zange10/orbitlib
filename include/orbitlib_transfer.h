@@ -197,7 +197,7 @@ double get_flyby_periapsis(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *b
  * @param v_body Velocity vector of the central body [m/s]
  * @return Flyby inclination angle [radians]
  */
-double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body);
+double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Plane3 equatorial_plane);
 
 /**
  * @brief Calculates parameters of a hyperbolic orbit (departure, arrival, or flyby) given velocity vectors and periapsis radius.
