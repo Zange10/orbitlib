@@ -103,11 +103,11 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 	
 	DataArray2 *data = data_array2_create();
 	
-	data_array2_insert_new(data, min_ta0, r1/r0 > 1 ? -target_dt : 1e100);
-	data_array2_insert_new(data, max_ta0, r1/r0 > 1 ? 1e100 : -target_dt);
+	data_array2_insert_new(data, vec2(min_ta0, r1/r0 > 1 ? -target_dt : 1e100));
+	data_array2_insert_new(data, vec2(max_ta0, r1/r0 > 1 ? 1e100 : -target_dt));
 	
 	// true anomaly of r0, theta1 not normed to pi and true anomaly of r1
-	double ta0, ta0_pun, ta1, last_ta0_pun;
+	double ta0, ta0_pun, ta1;
 	double mu = cb->mu;
 	
 	double dt;
@@ -116,8 +116,8 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 	enum LAMBERT_SOLVER_SUCCESS success = LAMBERT_MAX_ITERATIONS;
 	
 	for(int i = 0; i < 100; i++) {
-		ta0_pun = root_finder_monot_func_next_x(data);
-		if(i > 3 && last_ta0_pun == ta0_pun) { success = LAMBERT_IMPRECISION; break;}	// increments are 0 (due to imprecision)
+		ta0_pun = root_finder_monot_func_next_x(data, 0.01, 1e-20);
+		if(i > 3 && isnan(ta0_pun)) { success = LAMBERT_IMPRECISION; break;}	// increments are 0 (due to imprecision)
 		
 		ta0 = pi_norm(ta0_pun);
 		ta1 = pi_norm(ta0 + delta_ta);
@@ -131,7 +131,8 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 			printf("-------------\n\n");
 			success = LAMBERT_FAIL_ECC;
 			break;
-		} else if(e==1) e += 1e-10;	// no calculations for parabola -> make it a hyperbola
+		}
+		if(e==1) e += 1e-10;	// no calculations for parabola -> make it a hyperbola
 		
 		double rp = r0*(1 + e * cos(ta0))/(1 + e);
 		if(rp <= 0) rp = 1e-10;
@@ -176,8 +177,7 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
 			success = LAMBERT_FAIL_NAN;
 			break;
 		}
-		data_array2_insert_new(data, ta0_pun, dt - target_dt);
-		last_ta0_pun = ta0_pun;
+		data_array2_insert_new(data, vec2(ta0_pun, dt - target_dt));
 		
 		if(fabs(target_dt-dt) < 1) {
 			success = LAMBERT_SUCCESS;
