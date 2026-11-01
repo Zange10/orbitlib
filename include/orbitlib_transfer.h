@@ -87,8 +87,8 @@ typedef struct HyperbolaParams {
 	enum HyperbolaType type;            /**< Type of hyperbola maneuver */
 	double rp;                         /**< Periapsis radius [m] */
 	double c3_energy;                  /**< Characteristic energy (C3) [m²/s²] */
-	struct HyperbolaLegParams incoming; /**< Incoming leg parameters (ignored if type == HYP_DEPARTURE) */
-	struct HyperbolaLegParams outgoing; /**< Outgoing leg parameters (ignored if type == HYP_ARRIVAL) */
+	HyperbolaLegParams incoming; /**< Incoming leg parameters (ignored if type == HYP_DEPARTURE) */
+	HyperbolaLegParams outgoing; /**< Outgoing leg parameters (ignored if type == HYP_ARRIVAL) */
 } HyperbolaParams;
 
 
@@ -107,7 +107,7 @@ typedef struct HyperbolaParams {
  * @param cb Pointer to the central body influencing the orbit
  * @return Required delta-v for the maneuver [m/s]
  */
-double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double new_apsis, struct Body *cb);
+double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double new_apsis, Body *cb);
 
 /**
  * @brief Calculates delta-v needed to insert into a circular orbit from hyperbolic approach at periapsis radius
@@ -117,7 +117,7 @@ double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double 
  * @param vinf Hyperbolic excess speed (speed at infinity) [m/s]
  * @return Delta-v required for circularization [m/s]
  */
-double dv_circ(struct Body *body, double rp, double vinf);
+double dv_circ(Body *body, double rp, double vinf);
 
 /**
  * @brief Calculates delta-v needed to capture into orbit from hyperbolic approach at periapsis radius
@@ -127,7 +127,7 @@ double dv_circ(struct Body *body, double rp, double vinf);
  * @param vinf Hyperbolic excess speed (speed at infinity) [m/s]
  * @return Delta-v required for capture [m/s]
  */
-double dv_capture(struct Body *body, double rp, double vinf);
+double dv_capture(Body *body, double rp, double vinf);
 
 
 /*
@@ -154,7 +154,7 @@ Hohmann calc_hohmann_transfer(double r0, double r1, Body *cb);
  * @param delta_ta Change in true anomaly between positions [radians]
  * @param target_dt Desired transfer time [s]
  * @param cb Pointer to the central body
- * @return Lambert2 struct containing orbit and solver status
+ * @return Lambert2 containing orbit and solver status
  */
 Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, Body *cb);
 
@@ -165,7 +165,7 @@ Lambert2 calc_lambert2(double r0, double r1, double delta_ta, double target_dt, 
  * @param r1 Final position vector [m]
  * @param target_dt Desired transfer time [s]
  * @param cb Pointer to the central body
- * @return Lambert3 struct containing position, velocity vectors and solver status
+ * @return Lambert3 containing position, velocity vectors and solver status
  */
 Lambert3 calc_lambert3(Vector3 r0, Vector3 r1, double target_dt, Body *cb);
 
@@ -213,7 +213,7 @@ double get_flyby_inclination(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Plane
  * @param type Type of hyperbolic orbit (departure, arrival, or flyby)
  * @return Struct containing hyperbolic orbit parameters such as periapsis radius, C3 energy, and leg parameters
  */
-HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, struct Body *body, double rp, enum HyperbolaType type);
+HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body, double rp, enum HyperbolaType type);
 
 /**
  * @brief Determines if a flyby is viable by comparing the difference in excess speed between incoming and outgoing velocity vectors,

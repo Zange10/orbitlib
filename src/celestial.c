@@ -6,8 +6,8 @@
 #include "orbitlib_fileio.h"
 
 
-struct Body * new_body() {
-	struct Body *new_body = (struct Body*) malloc(sizeof(struct Body));
+Body * new_body() {
+	Body *new_body = (Body*) malloc(sizeof(Body));
 	sprintf(new_body->name, "BODY");
 	new_body->color[0] = 0.5;
 	new_body->color[1] = 0.5;
@@ -41,7 +41,7 @@ Plane3 get_body_equatorial_plane(Body *body) {
 	return constr_plane3_from_normal(vec3(0,0,0), vec3_from_angles(body->north_pole_ra, body->north_pole_decl));
 }
 
-void set_body_color(struct Body *body, double red, double green, double blue) {
+void set_body_color(Body *body, double red, double green, double blue) {
 	body->color[0] = red;
 	body->color[1] = green;
 	body->color[2] = blue;
@@ -76,20 +76,20 @@ CelestSystem * get_top_level_system(CelestSystem *system) {
 	return system;
 }
 
-struct Body * get_body_by_name(char *name, CelestSystem *system) {
+Body * get_body_by_name(char *name, CelestSystem *system) {
 	if(strcmp(system->cb->name, name) == 0) return system->cb;
 	for(int i = 0; i < system->num_bodies; i++) {
 		if(system->bodies[i] == NULL) return NULL;
 		if(strcmp(system->bodies[i]->name, name) == 0) return system->bodies[i];
 		if(system->bodies[i]->system != NULL) {
-			struct Body *body = get_body_by_name(name, system->bodies[i]->system);
+			Body *body = get_body_by_name(name, system->bodies[i]->system);
 			if(body != NULL) return body;
 		}
 	}
 	return NULL;
 }
 
-struct Body * get_body_by_id(int id, CelestSystem *system) {
+Body * get_body_by_id(int id, CelestSystem *system) {
 	if(id == system->cb->id) return system->cb;
 	for(int i = 0; i < system->num_bodies; i++) {
 		if(system->bodies[i] == NULL) return NULL;
@@ -98,7 +98,7 @@ struct Body * get_body_by_id(int id, CelestSystem *system) {
 	return NULL;
 }
 
-int get_body_system_id(struct Body *body, CelestSystem *system) {
+int get_body_system_id(Body *body, CelestSystem *system) {
 	for(int i = 0; i < system->num_bodies; i++) {
 		if(system->bodies[i] == body) return i;
 	}

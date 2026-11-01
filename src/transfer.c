@@ -3,9 +3,9 @@
 #include <math.h>
 #include <stdio.h>
 
-double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double new_apsis, struct Body *cb) {
-	struct Orbit initial_orbit;
-	struct Orbit new_orbit;
+double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double new_apsis, Body *cb) {
+	Orbit initial_orbit;
+	Orbit new_orbit;
 	
 	initial_orbit = constr_orbit_from_apsides(static_apsis, initial_apsis, 0, cb);
 	new_orbit = constr_orbit_from_apsides(static_apsis, new_apsis, 0, cb);
@@ -16,15 +16,15 @@ double calc_apsis_maneuver_dv(double static_apsis, double initial_apsis, double 
 	return fabs(v1-v0);
 }
 
-double dv_circ(struct Body *body, double rp, double vinf) {
+double dv_circ(Body *body, double rp, double vinf) {
 	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(body->mu / rp);
 }
 
-double dv_capture(struct Body *body, double rp, double vinf) {
+double dv_capture(Body *body, double rp, double vinf) {
 	return sqrt(2 * body->mu / rp + vinf * vinf) - sqrt(2 * body->mu / rp);
 }
 
-Hohmann calc_hohmann_transfer(double r0, double r1, struct Body *cb) {
+Hohmann calc_hohmann_transfer(double r0, double r1, Body *cb) {
 	double sma_pow_3 = pow(((r0 + r1) / 2),3);
 	double dur = M_PI * sqrt(sma_pow_3 / cb->mu);
 	double dv_dep = calc_apsis_maneuver_dv(r0, r0, r1, cb);
@@ -271,7 +271,7 @@ HyperbolaLegParams get_dep_hyperbola_params(Vector3 v_inf) {
 	return hyp_params;
 }
 
-HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, struct Body *body, double h_pe, enum HyperbolaType type) {
+HyperbolaParams get_hyperbola_params(Vector3 v_arr, Vector3 v_dep, Vector3 v_body, Body *body, double h_pe, enum HyperbolaType type) {
 	Vector3 vinf_arr = subtract_vec3(v_arr, v_body);
 	Vector3 vinf_dep = subtract_vec3(v_dep, v_body);
 	HyperbolaParams hyperbola_params = {.type = type};

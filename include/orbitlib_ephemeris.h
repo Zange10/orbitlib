@@ -2,8 +2,6 @@
 #define ORBITLIB_ORBITLIB_EPHEMERIS_H
 
 #include "geometrylib.h"
-#include "orbitlib_celestial.h"
-#include "orbitlib_datetime.h"
 
 /**
  * @brief Represents the ephemeral data consisting of epoch, position, and velocity components
@@ -14,19 +12,26 @@ typedef struct Ephem {
 	Vector3 v;		/**< Velocity Vector */
 } Ephem;
 
+
+#include "orbitlib_celestial.h"
+#include "orbitlib_datetime.h"
+
 /**
  * @brief Prints the date, position and velocity vector of the given ephemeris
  *
  * @param ephem The given ephemeris
  */
-void print_ephem(struct Ephem ephem);
+void print_ephem(Ephem ephem);
 
 
 /**
  * @brief Retrieves the ephemeral data of requested body for requested time (from JPL's Horizon API or from file)
  *
  * @param body The body for which the ephemerides should be stored
- * @param central_body The central body of the body's system
+ * @param min_date Starting date
+ * @param max_date End date
+ * @param time_step Time step
+ * @param ephem_directory Directory where the ephemeris should be stored
  */
 void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime time_step, const char *ephem_directory);
 

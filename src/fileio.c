@@ -58,7 +58,7 @@ void download_file(const char *url, const char *filepath) {
 
 enum STORED_UNITS {UNITS_LEGACY, UNITS_M_DEG_PA};
 
-void store_body_in_config_file(FILE *file, struct Body *body, CelestSystem *system) {
+void store_body_in_config_file(FILE *file, Body *body, CelestSystem *system) {
 	fprintf(file, "[%s]\n", body->name);
 	fprintf(file, "color = [%.3f, %.3f, %.3f]\n", body->color[0], body->color[1], body->color[2]);
 	fprintf(file, "id = %d\n", body->id);
@@ -80,7 +80,7 @@ void store_body_in_config_file(FILE *file, struct Body *body, CelestSystem *syst
 }
 
 void store_system_in_config_file(CelestSystem *system, const char *directory) {
-	char filename[50];
+	char filename[56];
 	sprintf(filename, "%s/%s.cfg", directory, system->name);
 	
 	FILE *file;
@@ -108,7 +108,7 @@ void parse_and_sort_into_celestial_subsystems(CelestSystem *system) {
 	
 	for(int i = 0; i < system->num_bodies; i++) {
 		int num_child_bodies = 0;
-		struct Body *body = system->bodies[i];
+		Body *body = system->bodies[i];
 		for(int j = 0; j < system->num_bodies; j++) {
 			if(system->bodies[j]->orbit.cb == body) num_child_bodies++;
 		}
@@ -116,7 +116,7 @@ void parse_and_sort_into_celestial_subsystems(CelestSystem *system) {
 			CelestSystem *child_system = new_system();
 			sprintf(child_system->name, "%s SYSTEM", body->name);
 			child_system->num_bodies = num_child_bodies;
-			child_system->bodies = malloc(num_child_bodies * sizeof(struct Body*));
+			child_system->bodies = malloc(num_child_bodies * sizeof(Body*));
 			child_system->cb = body;
 			child_system->prop_method = system->prop_method;
 			child_system->ut0 = system->ut0;
@@ -125,8 +125,8 @@ void parse_and_sort_into_celestial_subsystems(CelestSystem *system) {
 	}
 	
 	for(int i = 0; i < system->num_bodies; i++) {
-		struct Body *body = system->bodies[i];
-		struct Body *attractor = body->orbit.cb;
+		Body *body = system->bodies[i];
+		Body *attractor = body->orbit.cb;
 		if(attractor != system->cb) {
 			for(int j = 0; j < attractor->system->num_bodies-1; j++) {
 				attractor->system->bodies[j] = attractor->system->bodies[j+1];
@@ -140,7 +140,7 @@ void parse_and_sort_into_celestial_subsystems(CelestSystem *system) {
 		}
 	}
 	
-	struct Body **temp = realloc(system->bodies, system->num_bodies*(sizeof(struct Body*)));
+	Body **temp = realloc(system->bodies, system->num_bodies*(sizeof(Body*)));
 	if(temp == NULL) return;
 	system->bodies = temp;
 }
@@ -168,8 +168,8 @@ int get_key_and_value_from_config(char *key, char *value, char *line) {
 	return 0;
 }
 
-struct Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum STORED_UNITS units) {
-	struct Body *body = new_body();
+Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum STORED_UNITS units) {
+	Body *body = new_body();
 	double mean_anomaly = 0;
 	double g_asl = 0;
 	int has_mean_anomaly = 0;
@@ -255,9 +255,9 @@ struct Body * load_body_from_config_file(FILE *file, CelestSystem *system, enum 
 	if(has_g_asl) body->mu = 9.81*g_asl * body->radius*body->radius;
 	
 	if(system != NULL) {
-		struct Body *attractor = system->cb;
+		Body *attractor = system->cb;
 		if(has_central_body_name) {
-			struct Body *attr_temp = get_body_by_name(central_body_name, system);
+			Body *attr_temp = get_body_by_name(central_body_name, system);
 			if(attr_temp != NULL) attractor = attr_temp;
 		}
 		
@@ -314,20 +314,20 @@ CelestSystem * load_celestial_system_from_cfg_file(char *filename) {
 		}
 	}
 	
-	struct Body *cb = load_body_from_config_file(file, NULL, units);
+	Body *cb = load_body_from_config_file(file, NULL, units);
 	
 	if(cb == NULL) {printf("Couldn't load Central Body!\n"); free(system); return NULL;}
 	if(strcmp(central_body_name, cb->name) != 0) {printf("Central Body not in first position!\n"); free(system); free(cb); return NULL;}
 	
 	system->cb = cb;
-	system->bodies = (struct Body**) calloc(system->num_bodies, sizeof(struct Body*));
+	system->bodies = (Body**) calloc(system->num_bodies, sizeof(Body*));
 	for(int i = 0; i < system->num_bodies; i++) system->bodies[i] = load_body_from_config_file(file, system, units);
 	
 	if(system->prop_method == EPHEMS) {
 		for(int i = 0; i < system->num_bodies; i++) {
 			get_body_ephems(system->bodies[i], (Datetime){1950,1,1}, (Datetime){2100,1,1}, (Datetime){0,1}, "../Ephemerides");
 			// Needed for orbit visualization scale
-			OSV osv = osv_from_ephem(system->bodies[i]->ephem, system->bodies[i]->num_ephems, system->ut0, system->bodies[i]->orbit.cb);
+			OSV osv = osv_from_ephem(system->bodies[i]->ephem, system->bodies[i]->num_ephems, system->ut0/86400, system->bodies[i]->orbit.cb);
 			system->bodies[i]->orbit = constr_orbit_from_osv(osv.r, osv.v, system->bodies[i]->orbit.cb);
 		}
 	}

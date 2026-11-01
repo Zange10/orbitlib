@@ -21,8 +21,8 @@ typedef struct Body {
 	double north_pole_decl;		/**< Declination of the north pole relative to helio-centric coordinate system [rad] */
 	double rot_ut0;				/**< Rotation at UT0 (Angle between xz-plane (x+) and prime meridian) [rad] */
 	struct CelestSystem *system;/**< Pointer to the system this body is the central body of */
-	struct Orbit orbit;         /**< Orbit of the body at reference time (UT0) */
-	struct Ephem *ephem;        /**< Pointer to ephemeris data (if available) */
+	Orbit orbit;         /**< Orbit of the body at reference time (UT0) */
+	Ephem *ephem;        /**< Pointer to ephemeris data (if available) */
 	int num_ephems;             /**< Number of ephemeris states stored */
 } Body;
 
@@ -41,11 +41,11 @@ enum CelestSystemPropMethod {
 typedef struct CelestSystem {
 	char name[50];                             	/**< Name of the celestial system */
 	int num_bodies;                            	/**< Number of bodies orbiting the central body */
-	struct Body *cb;                           	/**< Central body of the system */
-	struct Body *home_body;						/**< Home body of the system (KSP-related; NULL if there is none) */
-	struct Body **bodies;                      	/**< Array of pointers to orbiting bodies */
+	Body *cb;                           	/**< Central body of the system */
+	Body *home_body;						/**< Home body of the system (KSP-related; NULL if there is none) */
+	Body **bodies;                      	/**< Array of pointers to orbiting bodies */
 	enum CelestSystemPropMethod prop_method;   	/**< Propagation method: orbital elements or ephemerides */
-	double ut0;                                	/**< Reference time (UT0) for the system */
+	double ut0;                                	/**< Reference time (UT0) for the system (Julian Date) */
 } CelestSystem;
 
 /*
@@ -60,7 +60,7 @@ typedef struct CelestSystem {
  *
  * @return Pointer to the newly created Body
  */
-struct Body * new_body();
+Body * new_body();
 
 
 /**
@@ -80,7 +80,7 @@ Plane3 get_body_equatorial_plane(Body *body);
  * @param green Green component (0–1)
  * @param blue Blue component (0–1)
  */
-void set_body_color(struct Body *body, double red, double green, double blue);
+void set_body_color(Body *body, double red, double green, double blue);
 
 /**
  * @brief Allocates and initializes a new celestial system
@@ -121,7 +121,7 @@ CelestSystem * get_top_level_system(CelestSystem *system);
  * @param system Pointer to the system to search in
  * @return Pointer to the body if found, NULL otherwise
  */
-struct Body * get_body_by_name(char *name, CelestSystem *system);
+Body * get_body_by_name(char *name, CelestSystem *system);
 
 
 /**
@@ -131,7 +131,7 @@ struct Body * get_body_by_name(char *name, CelestSystem *system);
  * @param system Pointer to the system to search in
  * @return Pointer to the body if found, NULL otherwise
  */
-struct Body * get_body_by_id(int id, CelestSystem *system);
+Body * get_body_by_id(int id, CelestSystem *system);
 
 
 /**
@@ -141,7 +141,7 @@ struct Body * get_body_by_id(int id, CelestSystem *system);
  * @param system Pointer to the system
  * @return Index of the body in the system's body list, or -1 if not found
  */
-int get_body_system_id(struct Body *body, CelestSystem *system);
+int get_body_system_id(Body *body, CelestSystem *system);
 
 /*
  * ------------------------------------

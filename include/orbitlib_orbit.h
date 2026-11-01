@@ -15,7 +15,7 @@ typedef struct Body Body;
  * @brief Represents an orbital path around a central body using classical orbital elements
  */
 typedef struct Orbit {
-	struct Body * cb;	/**< Central body being orbited */
+	Body * cb;	/**< Central body being orbited */
 	double e;           /**< Eccentricity of the orbit */
 	double a;           /**< Semi-major axis [m] */
 	double i; 			/**< Inclination [radians] */
@@ -51,7 +51,7 @@ typedef struct OSV {
  * @param cb Pointer to the central body
  * @return Constructed Orbit struct
  */
-struct Orbit constr_orbit_from_elements(double semimajor_axis, double eccentricity, double inclination, double raan, double arg_of_peri, double true_anomaly, struct Body *cb);
+Orbit constr_orbit_from_elements(double semimajor_axis, double eccentricity, double inclination, double raan, double arg_of_peri, double true_anomaly, Body *cb);
 
 /**
  * @brief Constructs an orbit using the two apsides and inclination
@@ -62,7 +62,7 @@ struct Orbit constr_orbit_from_elements(double semimajor_axis, double eccentrici
  * @param cb Pointer to the central body
  * @return Constructed Orbit struct
  */
-struct Orbit constr_orbit_from_apsides(double apsis1, double apsis2, double inclination, Body *cb);
+Orbit constr_orbit_from_apsides(double apsis1, double apsis2, double inclination, Body *cb);
 
 /**
  * @brief Constructs an orbit from an orbital state vector (position and velocity)
@@ -72,7 +72,7 @@ struct Orbit constr_orbit_from_apsides(double apsis1, double apsis2, double incl
  * @param cb Pointer to the central body
  * @return Constructed Orbit struct
  */
-struct Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, Body *cb);
+Orbit constr_orbit_from_osv(Vector3 r, Vector3 v, Body *cb);
 
 
 /*
@@ -99,7 +99,7 @@ Vector2 calc_vel_vec2(double r_mag, double v_mag, double true_anomaly, double fl
  * @param mean_anomaly Mean anomaly [radians]
  * @return True anomaly [radians]
  */
-double calc_true_anomaly_from_mean_anomaly(struct Orbit orbit, double mean_anomaly);
+double calc_true_anomaly_from_mean_anomaly(Orbit orbit, double mean_anomaly);
 
 /**
  * @brief Calculates the flight path angle of an orbit at a given true anomaly
@@ -133,7 +133,7 @@ double calc_orbital_period(Orbit orbit);
  * @param r Distance from central body [m]
  * @return Orbital speed at radius r [m/s]
  */
-double calc_orbital_speed(struct Orbit orbit, double r);
+double calc_orbital_speed(Orbit orbit, double r);
 
 /**
  * @brief Calculates the apoapsis distance (farthest point) of the orbit
@@ -141,7 +141,7 @@ double calc_orbital_speed(struct Orbit orbit, double r);
  * @param orbit Orbit struct containing orbital elements
  * @return Apoapsis radius [m]
  */
-double calc_orbit_apoapsis(struct Orbit orbit);
+double calc_orbit_apoapsis(Orbit orbit);
 
 /**
  * @brief Calculates the periapsis distance (closest point) of the orbit
@@ -149,7 +149,7 @@ double calc_orbit_apoapsis(struct Orbit orbit);
  * @param orbit Orbit struct containing orbital elements
  * @return Periapsis radius [m]
  */
-double calc_orbit_periapsis(struct Orbit orbit);
+double calc_orbit_periapsis(Orbit orbit);
 
 
 /*
@@ -181,10 +181,20 @@ OSV osv_from_orbit(Orbit orbit);
  * @brief Constructs an orbital state vector (position and velocity) from orbital elements and epoch
  *
  * @param orbit Orbit struct containing orbital elements
- * @param epoch Time at which to compute the OSV (Julian date)
+ * @param t Epoch time in seconds at which to compute the OSV
  * @return Orbital state vector (OSV) with position and velocity
  */
-OSV osv_from_elements(Orbit orbit, double epoch);
+OSV osv_from_elements(Orbit orbit, double t);
+
+/**
+ * @brief Constructs an orbital state vector (position and velocity) from the body's orbital elements
+ * or the body's orbital ephemeris and epoch
+ *
+ * @param body The celestial body
+ * @param t Epoch time in seconds at which to compute the OSV
+ * @return Orbital state vector (OSV) with position and velocity
+ */
+OSV get_body_osv_at_epoch(Body *body, double t);
 
 /*
  * ------------------------------------
@@ -232,6 +242,6 @@ OSV propagate_osv_ta(OSV osv, Body *cb, double delta_ta);
  *
  * @param orbit Orbit struct containing orbital elements
  */
-void print_orbit_info(struct Orbit orbit);
+void print_orbit_info(Orbit orbit);
 
 #endif //ORBITLIB_ORBITLIB_ORBIT_H

@@ -6,7 +6,7 @@
 #include <math.h>
 
 
-void print_ephem(struct Ephem ephem) {
+void print_ephem(Ephem ephem) {
 	printf("Date: %f  (", ephem.epoch);
 	print_date(convert_JD_date(ephem.epoch, DATE_ISO), 0);
 	printf(")\nx: %g m,   y: %g m,   z: %g m\n"
@@ -56,7 +56,7 @@ void get_body_ephems(Body *body, Datetime min_date, Datetime max_date, Datetime 
 		if(body->id >= 20000000) sprintf(body_id, "DES=%d", body->id);
 		else sprintf(body_id, "%d", body->id);
 		
-		char url[256];
+		char url[512];
 		sprintf(url, "https://ssd.jpl.nasa.gov/api/horizons.api?"
 					 "format=text&"
 					 "COMMAND='%s'&"
@@ -142,7 +142,7 @@ Ephem get_closest_ephem(Ephem *ephem, int num_ephems, double epoch) {
 	return ephem[num_ephems-1];
 }
 
-OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, struct Body *cb) {
+OSV osv_from_ephem(Ephem *ephem_list, int num_ephems, double epoch, Body *cb) {
 	Ephem ephem = get_closest_ephem(ephem_list, num_ephems, epoch);
 	double dt = (epoch - ephem.epoch) * (24 * 60 * 60);
 	return propagate_osv_time((OSV){ephem.r, ephem.v}, cb, dt);
