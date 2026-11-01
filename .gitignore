@@ -1,0 +1,30 @@
+# Build directories
+cmake-build-*/
+build/
+cmake-build-debug/
+cmake-build-release/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.so
+*.dll
+*.dylib
+
+# CLion / JetBrains
+.idea/
+*.iml
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Debug files
+*.pdb
+*.ilk
+*.dSYM/
